@@ -1,1 +1,0 @@
-var __globalScriptPlaceholder:Bool = true;
