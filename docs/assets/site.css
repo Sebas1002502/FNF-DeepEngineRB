@@ -95,18 +95,22 @@ a {
 }
 
 .brand-logo {
-  height: 26px !important;
-  max-height: 26px !important;
-  width: auto !important;
-  max-width: 120px !important;
+  height: 26px;
+  max-height: 26px;
+  width: auto;
+  max-width: 120px;
   display: block;
   object-fit: contain;
 }
 
+.plus-logo {
+  max-width: 100px;
+}
+
 .psych-logo {
-  height: 22px !important;
-  max-height: 22px !important;
-  max-width: 105px !important;
+  height: 22px;
+  max-height: 22px;
+  max-width: 105px;
 }
 
 .top-actions {
