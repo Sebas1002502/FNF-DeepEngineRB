@@ -4,12 +4,12 @@
   --font-heading: "Space Grotesk", "Segoe UI", sans-serif;
   --font-body: "Manrope", "Segoe UI", sans-serif;
 
-  --md-primary: #006686;
+  --md-primary: #9c27b0;
   --md-on-primary: #ffffff;
-  --md-primary-container: #bfe9ff;
-  --md-on-primary-container: #001f2a;
+  --md-primary-container: #f3e5f5;
+  --md-on-primary-container: #4a0072;
 
-  --md-secondary: #4f616d;
+  --md-secondary: #625b71;
   --md-surface: #f7f9fc;
   --md-surface-variant: #dde4eb;
   --md-on-surface: #161c22;
@@ -23,12 +23,12 @@
 }
 
 html[data-theme="dark"] {
-  --md-primary: #74d1ff;
-  --md-on-primary: #003548;
-  --md-primary-container: #004d69;
-  --md-on-primary-container: #bfe9ff;
+  --md-primary: #e1bee7;
+  --md-on-primary: #3e0051;
+  --md-primary-container: #6a0080;
+  --md-on-primary-container: #f3e5f5;
 
-  --md-secondary: #b5c9d7;
+  --md-secondary: #c8b6db;
   --md-surface: #0f151b;
   --md-surface-variant: #26313a;
   --md-on-surface: #e9f1f8;
@@ -83,10 +83,20 @@ a {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   text-decoration: none;
   font-family: var(--font-heading);
   font-size: 1.05rem;
   color: var(--md-on-surface);
+}
+
+.brand-logo {
+  height: 40px;
+  width: auto;
+  max-width: 180px;
+  display: block;
 }
 
 .top-actions {
@@ -339,6 +349,136 @@ a {
 .function-group p {
   color: var(--md-on-surface-variant);
   margin-bottom: 0.7rem;
+}
+
+.function-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.8rem;
+}
+
+.function-item {
+  padding: 0.8rem;
+  border-left: 3px solid var(--md-primary);
+  border-radius: 0 var(--md-radius-md) var(--md-radius-md) 0;
+  background: color-mix(in oklab, var(--md-surface) 85%, transparent);
+}
+
+.function-item h4 {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.95rem;
+  color: var(--md-on-surface);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.function-item h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+  color: var(--md-on-surface);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.function-sig {
+  margin: 0.3rem 0;
+  padding: 0.5rem 0.8rem;
+  background: color-mix(in oklab, var(--md-primary) 12%, transparent);
+  border-radius: var(--md-radius-md);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+.function-sig code {
+  color: var(--md-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 1em;
+}
+
+.function-params {
+  margin: 0.6rem 0 0 0;
+  padding: 0.6rem 0 0 0;
+  border-top: 1px solid color-mix(in oklab, var(--md-outline) 20%, transparent);
+  list-style: none;
+}
+
+.function-params li {
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.6rem;
+  background: color-mix(in oklab, var(--md-surface-variant) 30%, transparent);
+  border-radius: var(--md-radius-md);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.function-params strong {
+  color: var(--md-primary);
+  font-weight: 600;
+}
+
+.function-params em {
+  color: var(--md-secondary);
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+.function-desc {
+  margin: 0.4rem 0;
+  color: var(--md-on-surface);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.function-examples {
+  margin: 0.5rem 0 0 0;
+  padding: 0.8rem;
+  background: color-mix(in oklab, var(--md-secondary) 10%, transparent);
+  border-radius: var(--md-radius-md);
+  font-size: 0.95rem;
+}
+
+.function-examples strong {
+  color: var(--md-on-surface);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.function-examples code {
+  display: block;
+  padding: 0.5rem 0.7rem;
+  margin: 0.3rem 0;
+  background: color-mix(in oklab, var(--md-surface-variant) 50%, transparent);
+  border-radius: 4px;
+  color: var(--md-secondary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.example-item {
+  margin: 0.5rem 0;
+}
+
+.example-item code {
+  display: block;
+  padding: 0.5rem 0.7rem;
+  background: color-mix(in oklab, var(--md-surface-variant) 50%, transparent);
+  border-radius: 4px;
+  color: var(--md-secondary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.95em;
+  margin-bottom: 0.3rem;
+}
+
+.example-item p {
+  margin: 0;
+  padding: 0.3rem 0.7rem;
+  color: var(--md-on-surface-variant);
+  font-size: 0.88rem;
+  font-style: italic;
 }
 
 .function-tags {
