@@ -1603,3 +1603,5 @@ function renderSections(categories, filterText = "") {
     renderSections(psychCategories, event.target.value);
   });
 })();
+
+window.psychCategories = psychCategories;

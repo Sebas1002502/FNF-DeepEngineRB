@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plus API de Lua</title>
+    <meta
+      name="description"
+      content="Referencia de callbacks de video en Lua para Plus y notas internas de variables."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="../../assets/favicon.ico" />
+    <link rel="stylesheet" href="../../assets/site.css" />
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body class="plus-body">
+    <header class="topbar">
+      <a class="brand" href="../index.html">
+        <img src="../../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" />
+      </a>
+      <nav class="top-actions">
+        <a class="text-link" href="../psych/index.html">Psych</a>
+        <a class="text-link" href="../../plus/index.html">English</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Cambiar tema">
+          Tema: Auto
+        </button>
+      </nav>
+    </header>
+
+    <main class="page-main under-wrap">
+      <section class="card under-card">
+        <p class="eyebrow">Plus API de Lua</p>
+        <h1>Callbacks de video</h1>
+        <p>
+          Esta página documenta los callbacks Lua expuestos por <code>LuaVideo.hx</code> y las
+          variables internas que controlan la reproducción, ubicación y limpieza de sprites de
+          video.
+        </p>
+
+        <div class="page-links" style="margin-top: 1rem;">
+          <a href="#callbacks">Callbacks<small>Funciones Lua disponibles para videos</small></a>
+          <a href="#variables">Variables de video<small>Estado interno y parámetros</small></a>
+          <a href="#player">Video de presentación<small>Vista local usando present.mp4</small></a>
+        </div>
+      </section>
+
+      <section class="home-grid">
+        <article class="card home-card half" id="player">
+          <h2>Video de presentación</h2>
+          <p class="sidebar-copy">
+            La vista previa ahora usa el archivo local <code>assets/videos/present.mp4</code>.
+            Con eso la página ya no depende de embeds externos y evita bloqueos del navegador.
+          </p>
+          <div style="margin-top: 0.8rem;">
+            <video class="video-frame" controls preload="metadata" poster="../../assets/pluslogo.png">
+              <source src="../../assets/videos/present.mp4" type="video/mp4" />
+              Tu navegador no soporta el elemento de video.
+            </video>
+          </div>
+        </article>
+
+        <article class="card home-card half" id="callbacks">
+          <h2>Callbacks de video</h2>
+          <ul class="plain-list">
+            <li><code>playLuaVideoSprite(tag, path, x, y, front)</code> crea y reproduce un sprite de video.</li>
+            <li><code>pauseLuaVideo(tag)</code> pausa el video activo asociado al tag.</li>
+            <li><code>resumeLuaVideo(tag)</code> reanuda el video activo asociado al tag.</li>
+            <li><code>removeLuaVideo(tag)</code> solicita una eliminación segura del sprite.</li>
+            <li><code>forceRemoveLuaVideo(tag)</code> omite la protección de eliminación retrasada.</li>
+            <li><code>luaVideoExists(tag)</code> verifica si el video etiquetado existe.</li>
+            <li><code>isLuaVideoPlaying(tag)</code> devuelve el estado actual de reproducción.</li>
+            <li><code>setLuaVideoVolume(tag, volume)</code> ajusta el volumen de reproducción.</li>
+            <li><code>getLuaVideoDuration(tag)</code> devuelve la duración total en segundos.</li>
+            <li><code>getLuaVideoTime(tag)</code> devuelve la posición actual de reproducción en segundos.</li>
+          </ul>
+        </article>
+
+        <article class="card home-card wide" id="variables">
+          <h2>Variables de video</h2>
+          <p class="sidebar-copy">
+            Estas variables y parámetros siguen el mismo estilo de documentación que Psych:
+            primero el nombre y después una explicación directa de qué hace cada uno.
+          </p>
+          <div class="page-links" style="margin-top: 0.8rem;">
+            <a href="#tag">tag<small>Clave única para guardar y recuperar el sprite de video.</small></a>
+            <a href="#path">path<small>Ruta de medios resuelta con <code>Paths.video(path)</code>.</small></a>
+            <a href="#x">x<small>Posición horizontal aplicada cuando termina la configuración del formato.</small></a>
+            <a href="#y">y<small>Posición vertical aplicada cuando termina la configuración del formato.</small></a>
+            <a href="#front">front<small>Si es <code>true</code>, el sprite se agrega encima de la pila de juego.</small></a>
+            <a href="#volume">volume<small>Volumen normalizado usado por <code>setLuaVideoVolume</code>.</small></a>
+            <a href="#activeVideos">activeVideos<small>Mapa interno que guarda los sprites activos por tag.</small></a>
+            <a href="#allowDestroy">allowDestroy<small>Protección interna que retrasa la destrucción hasta que el sprite esté listo.</small></a>
+            <a href="#isDestroyed">isDestroyed<small>Bandera interna que evita destruir el mismo video dos veces.</small></a>
+          </div>
+        </article>
+
+        <article class="card home-card half" id="tag">
+          <h2>tag</h2>
+          <p class="sidebar-copy">
+            Identificador usado como clave de referencia para el sprite de video. Todos los
+            callbacks que trabajan con un video usan ese mismo tag para encontrarlo.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="path">
+          <h2>path</h2>
+          <p class="sidebar-copy">
+            Ruta del archivo de video que recibe <code>playLuaVideoSprite</code>. El motor la
+            resuelve con <code>Paths.video(path)</code> antes de cargar el sprite.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="x">
+          <h2>x</h2>
+          <p class="sidebar-copy">
+            Posición horizontal del sprite de video. Se aplica cuando termina el callback de
+            configuración del formato y ya se puede actualizar el hitbox.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="y">
+          <h2>y</h2>
+          <p class="sidebar-copy">
+            Posición vertical del sprite de video. Igual que <code>x</code>, se aplica después de
+            la configuración inicial del video.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="front">
+          <h2>front</h2>
+          <p class="sidebar-copy">
+            Bandera de capa usada por <code>playLuaVideoSprite</code>. Si vale <code>true</code>,
+            el sprite se agrega por encima de la pila del playfield.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="volume">
+          <h2>volume</h2>
+          <p class="sidebar-copy">
+            Valor de volumen normalizado usado por <code>setLuaVideoVolume</code>. El callback lo
+            traduce al volumen interno del reproductor.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="activeVideos">
+          <h2>activeVideos</h2>
+          <p class="sidebar-copy">
+            Mapa interno que guarda los sprites de video activos por tag.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="allowDestroy">
+          <h2>allowDestroy</h2>
+          <p class="sidebar-copy">
+            Protección interna que retrasa la destrucción unos segundos para que el sprite no se
+            elimine durante la inicialización.
+          </p>
+        </article>
+
+        <article class="card home-card half" id="isDestroyed">
+          <h2>isDestroyed</h2>
+          <p class="sidebar-copy">
+            Bandera interna que evita destruir el mismo video dos veces.
+          </p>
+        </article>
+
+        <article class="card home-card wide">
+          <h2>Notas</h2>
+          <ul class="plain-list">
+            <li><code>VIDEOS_ALLOWED</code> debe estar activado al compilar.</li>
+            <li><code>onVideoFinished(tag)</code> se dispara cuando el video termina.</li>
+            <li><code>forceRemoveLuaVideo(tag)</code> sirve cuando la limpieza debe ser inmediata.</li>
+            <li>La documentación queda lista para sumar más ejemplos de video después.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
