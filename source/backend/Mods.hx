@@ -1,7 +1,5 @@
 package backend;
 
-import backend.AssetLoader;
-import openfl.utils.AssetType;
 import openfl.utils.Assets;
 
 import haxe.Json;
@@ -54,11 +52,11 @@ class Mods
 		var list:Array<String> = [];
 		#if MODS_ALLOWED
 		var modsFolder:String = Paths.mods();
-		if(Paths.safeModPathExists(modsFolder)) {
+		if(FileSystem.exists(modsFolder)) {
 			for (folder in Paths.readDirectory(modsFolder))
 			{
 				var path = haxe.io.Path.join([modsFolder, folder]);
-				if (Paths.safeModIsDirectory(path) && !ignoreModFolders.contains(folder.toLowerCase()) && !list.contains(folder))
+				if (FileSystem.isDirectory(path) && !ignoreModFolders.contains(folder.toLowerCase()) && !list.contains(folder))
 					list.push(folder);
 			}
 		}
@@ -97,14 +95,14 @@ class Mods
 	{
 		var foldersToCheck:Array<String> = [];
 		//Main folder
-		if(AssetLoader.exists(path + fileToFind, TEXT))
+		if(FileSystem.exists(path + fileToFind))
 			foldersToCheck.push(path + fileToFind);
 
 		// Week folder
 		if(Paths.currentLevel != null && Paths.currentLevel != path)
 		{
 			var pth:String = Paths.getFolderPath(fileToFind, Paths.currentLevel);
-			if(!foldersToCheck.contains(pth) && AssetLoader.exists(pth, TEXT))
+			if(!foldersToCheck.contains(pth) && FileSystem.exists(pth))
 				foldersToCheck.push(pth);
 		}
 
@@ -115,18 +113,18 @@ class Mods
 			for(mod in Mods.getGlobalMods())
 			{
 				var folder:String = Paths.mods(mod + '/' + fileToFind);
-				if(AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder)) foldersToCheck.push(folder);
+				if(FileSystem.exists(folder) && !foldersToCheck.contains(folder)) foldersToCheck.push(folder);
 			}
 
 			// Then "PsychEngine/mods/" main folder
 			var folder:String = Paths.mods(fileToFind);
-			if(AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder)) foldersToCheck.push(Paths.mods(fileToFind));
+			if(FileSystem.exists(folder) && !foldersToCheck.contains(folder)) foldersToCheck.push(Paths.mods(fileToFind));
 
 			// And lastly, the loaded mod's folder
 			if(Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
 			{
 				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
-				if(AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder)) foldersToCheck.push(folder);
+				if(FileSystem.exists(folder) && !foldersToCheck.contains(folder)) foldersToCheck.push(folder);
 			}
 		}
 		#end
@@ -139,9 +137,13 @@ class Mods
 		if(folder == null) folder = Mods.currentModDirectory;
 
 		var path = Paths.mods(folder + '/pack.json');
-		if(AssetLoader.exists(path, TEXT)) {
+		if(FileSystem.exists(path)) {
 			try {
-				var rawJson:String = AssetLoader.loadText(path);
+				#if sys
+				var rawJson:String = File.getContent(path);
+				#else
+				var rawJson:String = Assets.getText(path);
+				#end
 				if(rawJson != null && rawJson.length > 0) return tjson.TJSON.parse(rawJson);
 			} catch(e:Dynamic) {
 				trace(e);
@@ -158,7 +160,7 @@ class Mods
 
 		#if MODS_ALLOWED
 		try {
-			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end))
+			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getExternalStorageDirectory() + #else Sys.getCwd() + #end 'modsList.txt'))
 			{
 				//trace('Mod: $mod');
 				if(mod.trim().length < 1) continue;
@@ -184,12 +186,11 @@ class Mods
 		var list:Array<Array<Dynamic>> = [];
 		var added:Array<String> = [];
 		try {
-			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end))
+			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getExternalStorageDirectory() + #else Sys.getCwd() + #end 'modsList.txt'))
 			{
 				var dat:Array<String> = mod.split("|");
 				var folder:String = dat[0];
-				var folderPath:String = Paths.mods(folder);
-				if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
+				if(folder.trim().length > 0 && FileSystem.exists(Paths.mods(folder)) && FileSystem.isDirectory(Paths.mods(folder)) && !added.contains(folder))
 				{
 					added.push(folder);
 					list.push([folder, (dat[1] == "1")]);
@@ -202,8 +203,7 @@ class Mods
 		// Scan for folders that aren't on modsList.txt yet
 		for (folder in getModDirectories())
 		{
-			var folderPath:String = Paths.mods(folder);
-			if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) &&
+			if(folder.trim().length > 0 && FileSystem.exists(Paths.mods(folder)) && FileSystem.isDirectory(Paths.mods(folder)) &&
 			!ignoreModFolders.contains(folder.toLowerCase()) && !added.contains(folder))
 			{
 				added.push(folder);
@@ -220,14 +220,7 @@ class Mods
 			fileStr += values[0] + '|' + (values[1] ? '1' : '0');
 		}
 
-		try
-		{
-			File.saveContent(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end, fileStr);
-		}
-		catch(e:Dynamic)
-		{
-			trace('Failed to save modsList.txt: $e');
-		}
+		File.saveContent(#if android StorageUtil.getExternalStorageDirectory() + #else Sys.getCwd() + #end 'modsList.txt', fileStr);
 		updatedOnState = true;
 		//trace('Saved modsList.txt');
 		#end
@@ -244,4 +237,3 @@ class Mods
 		#end
 	}
 }
-

@@ -16,9 +16,9 @@ class AchievementsMenuState extends MusicBeatState
 	public var progressTxt:FlxText;
 	public var progressBar:Bar;
 
-	public var camFollow:FlxObject;
+	var camFollow:FlxObject;
 
-	public var MAX_PER_ROW:Int = 4;
+	var MAX_PER_ROW:Int = 4;
 
 	override function create()
 	{
@@ -156,13 +156,11 @@ class AchievementsMenuState extends MusicBeatState
 
 	var goingBack:Bool = false;
 	override function update(elapsed:Float) {
-		super.update(elapsed);
-		
 		if(!goingBack && options.length > 1)
 		{
 			var add:Int = 0;
-			if (controls.UI_LEFT_P || (touchPad != null && touchPad.buttonLeft.justPressed)) add = -1;
-			else if (controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed)) add = 1;
+			if (controls.UI_LEFT_P) add = -1;
+			else if (controls.UI_RIGHT_P) add = 1;
 
 			if(add != 0)
 			{
@@ -184,8 +182,8 @@ class AchievementsMenuState extends MusicBeatState
 			if(options.length > MAX_PER_ROW)
 			{
 				var add:Int = 0;
-				if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed)) add = -1;
-				else if (controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed)) add = 1;
+				if (controls.UI_UP_P) add = -1;
+				else if (controls.UI_DOWN_P) add = 1;
 
 				if(add != 0)
 				{
@@ -211,15 +209,16 @@ class AchievementsMenuState extends MusicBeatState
 			if(MusicBeatState.getState().touchPad.buttonC.justPressed || controls.RESET && (options[curSelected].unlocked || options[curSelected].curProgress > 0))
 			{
 				removeTouchPad();
-				openSubState(backend.ScriptableSubstate.tryCreate('ResetAchievementSubstate', new ResetAchievementSubstate()));
+				openSubState(new ResetAchievementSubstate());
 			}
 		}
 
-		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed)) {
+		if (controls.BACK) {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(new MainMenuState());
 			goingBack = true;
 		}
+		super.update(elapsed);
 	}
 
 	public var barTween:FlxTween = null;

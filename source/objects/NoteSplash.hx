@@ -41,12 +41,9 @@ class NoteSplash extends FlxSprite
 
 	var spawned:Bool = false;
 	var noteDataMap:Map<Int, String> = new Map();
-	var reusableRGBPalette:RGBPalette = new RGBPalette();
 
 	public static var defaultNoteSplash(default, never):String = "noteSplashes/noteSplashes";
-	public static var noRgbNoteSplash(default, never):String = "noteSplashesNoRGB/noteSplashes";
 	public static var configs:Map<String, NoteSplashConfig> = new Map();
-	static var framesCache:Map<String, Dynamic> = new Map();
 
 	public function new(?x:Float = 0, ?y:Float = 0, ?splash:String)
 	{
@@ -65,83 +62,24 @@ class NoteSplash extends FlxSprite
 	{
 		config = null;
 		maxAnims = 0;
-		spawned = false;
-		animation.finishCallback = null;
-		@:privateAccess
-		animation.clearAnimations();
 
 		if(splash == null)
 		{
-			splash = getDefaultNoteSplashPath() + getSplashSkinPostfix();
+			splash = defaultNoteSplash + getSplashSkinPostfix();
 			if (PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0) splash = PlayState.SONG.splashSkin;
 		}
 
 		texture = splash;
-		frames = null;
-		var atlasPath:String = 'images/$texture';
-		var loadedAtlas:Bool = false;
-		if (framesCache.exists(atlasPath))
-		{
-			frames = framesCache.get(atlasPath);
-			loadedAtlas = frames != null;
-		}
-		else
-		{
-			frames = Paths.getSparrowAtlas(texture);
-			if (frames != null)
-			{
-				framesCache.set(atlasPath, frames);
-				loadedAtlas = true;
-			}
-		}
+		frames = Paths.getSparrowAtlas(texture);
 		if (frames == null)
 		{
-			texture = getDefaultNoteSplashPath() + getSplashSkinPostfix();
-			atlasPath = 'images/$texture';
-			if (framesCache.exists(atlasPath))
-			{
-				frames = framesCache.get(atlasPath);
-				loadedAtlas = frames != null;
-			}
-			else
-			{
-				frames = Paths.getSparrowAtlas(texture);
-				if (frames != null)
-				{
-					framesCache.set(atlasPath, frames);
-					loadedAtlas = true;
-				}
-			}
+			texture = defaultNoteSplash + getSplashSkinPostfix();
+			frames = Paths.getSparrowAtlas(texture);
 			if (frames == null)
 			{
 				texture = defaultNoteSplash;
-				atlasPath = 'images/$texture';
-				if (framesCache.exists(atlasPath))
-				{
-					frames = framesCache.get(atlasPath);
-					loadedAtlas = frames != null;
-				}
-				else
-				{
-					frames = Paths.getSparrowAtlas(texture);
-					if (frames != null)
-					{
-						framesCache.set(atlasPath, frames);
-						loadedAtlas = true;
-					}
-				}
+				frames = Paths.getSparrowAtlas(texture);
 			}
-		}
-
-		if (!loadedAtlas || frames == null)
-		{
-			// Keep the splash invisible rather than inheriting stale frames from a recycled instance.
-			texture = null;
-			makeGraphic(1, 1, FlxColor.TRANSPARENT);
-			updateHitbox();
-			config = createConfig();
-			maxAnims = 0;
-			return;
 		}
 
 		var path:String = 'images/$texture';
@@ -250,17 +188,6 @@ class NoteSplash extends FlxSprite
 		configs.set(path, this.config);
 	}
 
-	public static function warmupSplashSkin(?splash:String):Void
-	{
-		var preview:NoteSplash = new NoteSplash(0, 0, splash);
-		preview.kill();
-	}
-
-	public static function clearCache():Void
-	{
-		framesCache.clear();
-	}
-
 	public function spawnSplashNote(?x:Float = 0, ?y:Float = 0, ?noteData:Int = 0, ?note:Note, ?randomize:Bool = true)
 	{
 		if (note != null && note.noteSplashData.disabled)
@@ -270,7 +197,7 @@ class NoteSplash extends FlxSprite
 
 		if (!inEditor)
 		{
-			var loadedTexture:String = getDefaultNoteSplashPath() + getSplashSkinPostfix();
+			var loadedTexture:String = defaultNoteSplash + getSplashSkinPostfix();
 			if (note != null && note.noteSplashData.texture != null) loadedTexture = note.noteSplashData.texture;
 			else if (PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0) loadedTexture = PlayState.SONG.splashSkin;
 
@@ -297,8 +224,7 @@ class NoteSplash extends FlxSprite
 			Note.initializeGlobalRGBShader(noteData % Note.colArray.length);
 			if (inEditor || (note == null || note.noteSplashData.useRGBShader) && (PlayState.SONG == null || !PlayState.SONG.disableNoteRGB))
 			{
-				tempShader = reusableRGBPalette;
-				tempShader.mult = 1.0;
+				tempShader = new RGBPalette();
 				// If Note RGB is enabled:
 				if ((note == null || !note.noteSplashData.useGlobalShader) || inEditor)
 				{
@@ -394,13 +320,7 @@ class NoteSplash extends FlxSprite
 	{
 		var anim:String = noteDataMap.get(noteData);
 		if (anim != null && animation.exists(anim))
-		{
 			animation.play(anim, true);
-		}
-		else if (animation.getNameList().length > 0)
-		{
-			animation.play(animation.getNameList()[0], true);
-		}
 
 		return anim;
 	}
@@ -445,13 +365,6 @@ class NoteSplash extends FlxSprite
 		if (ClientPrefs.data.splashSkin != ClientPrefs.defaultData.splashSkin)
 			skin = '-' + ClientPrefs.data.splashSkin.trim().toLowerCase().replace(' ', '-');
 		return skin;
-	}
-
-	public static function getDefaultNoteSplashPath():String
-	{
-		var preferred:String = defaultNoteSplash;
-		if(Paths.fileExists('images/' + preferred + '.png', IMAGE)) return preferred;
-		return noRgbNoteSplash;
 	}
 
 	public static function createConfig():NoteSplashConfig

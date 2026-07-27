@@ -14,9 +14,9 @@ import lime.ui.Haptic;
 class GameOverSubstate extends MusicBeatSubstate
 {
 	public var boyfriend:Character;
-	public var camFollow:FlxObject;
+	var camFollow:FlxObject;
 
-	public var stagePostfix:String = "";
+	var stagePostfix:String = "";
 
 	public static var characterName:String = 'bf-dead';
 	public static var deathSoundName:String = 'fnf_loss_sfx';
@@ -171,13 +171,13 @@ class GameOverSubstate extends MusicBeatSubstate
 				PlayState.deathCounter = 0;
 				PlayState.seenCutscene = false;
 				PlayState.chartingMode = false;
-				
+	
 				Mods.loadTopMod();
 				if (PlayState.isStoryMode)
-					MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
+					MusicBeatState.switchState(new StoryMenuState());
 				else
-					MusicBeatState.switchState(states.FreeplayStateSelector.create());
-			
+					MusicBeatState.switchState(new FreeplayState());
+	
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				PlayState.instance.callOnScripts('onGameOverConfirm', [false]);
 			}

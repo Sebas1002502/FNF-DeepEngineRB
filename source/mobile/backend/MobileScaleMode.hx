@@ -1,114 +1,51 @@
+/*
+ * Copyright (C) 2025 Mobile Porting Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package mobile.backend;
 
 import flixel.system.scaleModes.BaseScaleMode;
 
 /**
- * @author Karim Akra, adapted for Plus Engine
+ * ...
+ * @author: Karim Akra
  */
 class MobileScaleMode extends BaseScaleMode
 {
-	public static var allowInfinityDisplay(default, set):Bool = true;
-
-	// Base game resolution — the canonical 16:9 safe area used by mods.
-	public static final BASE_GAME_WIDTH:Int = 1280;
-	public static final BASE_GAME_HEIGHT:Int = 720;
-
-	static inline final MAX_RATIO_W:Float = 100;
-	static inline final MAX_RATIO_H:Float = 1;
-
-	// Logical game dimensions after the last onMeasure, used by the helpers.
-	static var currentGameWidth:Int = BASE_GAME_WIDTH;
-	static var currentGameHeight:Int = BASE_GAME_HEIGHT;
-
-	/** Returns the original 16:9 safe area width (always 1280). */
-	public static inline function getSafeWidth():Float
-		return BASE_GAME_WIDTH;
-
-	/** Returns the original 16:9 safe area height (always 720). */
-	public static inline function getSafeHeight():Float
-		return BASE_GAME_HEIGHT;
-
-	/** Returns the full logical game width after expansion. */
-	public static inline function getScreenWidth():Float
-		return currentGameWidth;
-
-	/** Returns the full logical game height after expansion. */
-	public static inline function getScreenHeight():Float
-		return currentGameHeight;
-
-	/**
-	 * Returns the X offset (in game pixels) from the left screen edge to the
-	 * start of the original 16:9 safe area.
-	 * Add this to positions that should sit inside the centered 1280-wide zone.
-	 */
-	public static inline function getHorizontalOffset():Float
-		return (currentGameWidth - BASE_GAME_WIDTH) / 2;
-
-	/**
-	 * Returns the Y offset (in game pixels) from the top screen edge to the
-	 * start of the original 16:9 safe area.
-	 * Add this to positions that should sit inside the centered 720-tall zone.
-	 */
-	public static inline function getVerticalOffset():Float
-		return (currentGameHeight - BASE_GAME_HEIGHT) / 2;
-
-	public static inline function safeX(x:Float):Float
-		return getHorizontalOffset() + x;
-
-	public static inline function safeY(y:Float):Float
-		return getVerticalOffset() + y;
-
-	public static inline function safeCenterX(width:Float):Float
-		return getHorizontalOffset() + ((BASE_GAME_WIDTH - width) / 2);
-
-	public static inline function safeCenterY(height:Float):Float
-		return getVerticalOffset() + ((BASE_GAME_HEIGHT - height) / 2);
-
-	override public function onMeasure(Width:Int, Height:Int):Void
-	{
-		// BaseScaleMode.onMeasure already resets FlxG.width/height to
-		// initialWidth/initialHeight before calling updateGameSize, so our
-		// override just needs to snapshot the result afterwards.
-		super.onMeasure(Width, Height);
-
-		currentGameWidth = FlxG.width;
-		currentGameHeight = FlxG.height;
-	}
+	public static var allowWideScreen(default, set):Bool = true;
 
 	override function updateGameSize(Width:Int, Height:Int):Void
 	{
-		if (ClientPrefs.data.infinityDisplay && allowInfinityDisplay)
+		if (ClientPrefs.data.wideScreen && allowWideScreen)
 		{
-			var physRatio:Float = Width / Height;
-			var baseRatio:Float = BASE_GAME_WIDTH / BASE_GAME_HEIGHT; // 16:9 ≈ 1.777
-			var maxRatio:Float = MAX_RATIO_W / MAX_RATIO_H;           // 20:9 ≈ 2.222
-
-			if (physRatio >= baseRatio)
-			{
-				// Screen wider than 16:9 (most modern landscape phones).
-				// Scale by height, expand game width up to the max ratio cap.
-				var clampedRatio:Float = Math.min(physRatio, maxRatio);
-				gameSize.y = Height;
-				gameSize.x = Math.floor(gameSize.y * clampedRatio);
-				// Expand the logical width so the world is wider, not stretched.
-				untyped FlxG.width = Math.floor(BASE_GAME_HEIGHT * clampedRatio);
-			}
-			else
-			{
-				// Screen taller than 16:9 (tablets, unusual orientations).
-				// Scale by width, expand game height.
-				gameSize.x = Width;
-				gameSize.y = Height;
-				untyped FlxG.height = Math.floor(BASE_GAME_WIDTH / physRatio);
-			}
+			super.updateGameSize(Width, Height);
 		}
 		else
 		{
-			// Standard 16:9 locked mode — black bars on wider / taller screens.
-			var ratio:Float = BASE_GAME_WIDTH / BASE_GAME_HEIGHT;
+			var ratio:Float = FlxG.width / FlxG.height;
 			var realRatio:Float = Width / Height;
 
-			if (realRatio < ratio)
+			var scaleY:Bool = realRatio < ratio;
+
+			if (scaleY)
 			{
 				gameSize.x = Width;
 				gameSize.y = Math.floor(gameSize.x / ratio);
@@ -123,20 +60,17 @@ class MobileScaleMode extends BaseScaleMode
 
 	override function updateGamePosition():Void
 	{
-		super.updateGamePosition();
+		if (ClientPrefs.data.wideScreen && allowWideScreen)
+			FlxG.game.x = FlxG.game.y = 0;
+		else
+			super.updateGamePosition();
 	}
 
 	@:noCompletion
-	private static function set_allowInfinityDisplay(value:Bool):Bool
+	private static function set_allowWideScreen(value:Bool):Bool
 	{
-		if (allowInfinityDisplay == value)
-			return value;
-
-		allowInfinityDisplay = value;
-
-		if (Std.isOfType(FlxG.scaleMode, MobileScaleMode) && FlxG.stage != null)
-			cast(FlxG.scaleMode, MobileScaleMode).onMeasure(FlxG.stage.stageWidth, FlxG.stage.stageHeight);
-
+		allowWideScreen = value;
+		FlxG.scaleMode = new MobileScaleMode();
 		return value;
 	}
 }

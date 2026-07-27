@@ -13,83 +13,30 @@ import states.TitleState;
 	public var hitboxPos:Bool = true; // hitbox extra button position option
 	public var dynamicColors:Bool = true; // yes cause its cool -Karim
 	public var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
-	public var showTouchPointer:Bool = true; // show touch pointer indicator (like Android dev option)
-	public var showMobileDebugButtons:Bool = false; // show the trace button on mobile
 	public var screensaver:Bool = false;
-	public var infinityDisplay:Bool = false; // Extend viewport vertically for modern screens while keeping game at 16:9
-	#if android
-	public var storageType:String = "EXTERNAL_DATA";
-	public var androidOptimizationsApplied:Bool = false; // One-time optimization flag
-	public var androidOptimizationProfileVersion:Int = 0;
-	#end
+	public var wideScreen:Bool = false;
 	public var hitboxType:String = "Gradient";
 	public var popUpRating:Bool = true;
-	public var versionTextOnGameplay:Bool = false;
+	public var vsync:Bool = false;
 	public var gameOverVibration:Bool = false;
 	public var fpsRework:Bool = false;
-	public var framerateMode:String = 'Psych';
-	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
-	#if windows
-	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
-	#end
-	public var accuracySystem:String = 'Psych'; // 'Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG'
-	public var badShitBreakCombo:Bool = false; // When true, Bad and Shit will break the combo
-	public var systemScoreMultiplier:String = 'Psych'; // 'Psych', 'Codename'
+	
 	public var downScroll:Bool = false;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
 	public var showFPS:Bool = true;
-	public var vsync:Bool = false;
-	public var fpsCounterMode:String = #if mobile 'Visible No Background' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
-	public var fpsDebugLevel:Int = #if mobile 1 #else 2 #end; // Legacy FPSCounter debug level (persistent)
-	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
-	public var lowerVolumeOnFocusLost:Bool = false;
 	public var antialiasing:Bool = true;
-	#if windows
-	public var changeWindowBorderColorWithNoteHit:Bool = false; // Changes window border color on note hit (Windows 11 only)
-	#end
 	public var noteSkin:String = 'Default';
-	public var noteRGB:Bool = true;
 	public var splashSkin:String = 'Psych';
 	public var splashAlpha:Float = 0.6;
-	public var colorQuantization:Bool = false; // StepMania-style color quantization
-	public var menuAccentColor:String = 'Purple';
-	public var menuAccentColorCustom:Int = 0xFF6F52D8;
-	public var menuDarkTheme:Bool = false;
-	public var menuThemeMode:String = 'Light';
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
-	public var colorblindMode:String = 'None';
 	public var cacheOnGPU:Bool = #if !switch false #else true #end; // GPU Caching made by Raltyro
 	public var framerate:Int = 60;
 	public var camZooms:Bool = true;
 	public var hideHud:Bool = false;
-	public var hideSustainSplash:Bool = true;
-	public var showKeyViewer:Bool = false;
-	public var iconBounceType:String = 'Default';
-	public var judgementCounter:Bool = false;
-	public var showRating:Bool = true;
-	public var showCombo:Bool = false;
-	public var showComboNum:Bool = true;
-	public var comboInGame:Bool = false;
-	public var nfRatingStyle:Bool = false;
-	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
-	public var endCountdownSeconds:Int = 10;  // End countdown seconds (10-30)
-	public var camera3dEnabled:Bool = true; // Enables 3D camera transformations
-	public var zScale:Float = 1.0; // Z-axis depth scale (0.1-5.0)
-	public var renderArrowPaths:Bool = false; // Renders arrow trajectory lines (performance intensive)
-	public var styledArrowPaths:Bool = false; // Applies colors/transparency to arrow paths
-	public var arrowPathBoundary:Int = 300; // Pixels beyond screen to render paths (0-1000)
-	public var optimizeHolds:Bool = false; // Optimizes hold rendering (not recommended for complex modcharts)
-	public var holdsBehindStrum:Bool = false; // Renders sustains behind strum line
-	public var holdEndScale:Float = 1.0; // Scale multiplier for hold note endings (0.1-3.0)
-	public var holdCacheEnabled:Bool = true; // Hold graphics cache for performance
-	public var holdAlphaDivisions:Int = 20; // Pre-calculated alpha variants (10-30)
-	public var columnSpecificModifiers:Bool = true; // Enables per-lane modifier calculations
-	public var modchartDebug:Bool = false; // Shows the NotITG-style modchart debug overlay
-	
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
 		[0xFFC24B99, 0xFFFFFFFF, 0xFF3C1F56],
@@ -101,26 +48,13 @@ import states.TitleState;
 		[0xFF3DCAFF, 0xFFF4FFFF, 0xFF003060],
 		[0xFF71E300, 0xFFF6FFE6, 0xFF003100],
 		[0xFFFF884E, 0xFFFFFAF5, 0xFF6C0000]];
-	public var arrowHSV:Array<Array<Float>> = [
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0]
-	];
 
 	public var ghostTapping:Bool = true;
 	public var timeBarType:String = 'Time Left';
-	public var shadedTimeBar:Bool = false;
 	public var scoreZoom:Bool = true;
-	public var timeBump:Bool = false;
 	public var noReset:Bool = false;
 	public var healthBarAlpha:Float = 1;
-	public var smoothHealthBar:Bool = true;
-	public var smoothHPBug:Bool = false;
-	public var usePsychScoreText:Bool = true;
 	public var hitsoundVolume:Float = 0;
-	public var hitSounds:String = "None";
-	public var hitsoundType:String = "None";
 	public var pauseMusic:String = 'Tea Time';
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
@@ -143,41 +77,24 @@ import states.TitleState;
 		'instakill' => false,
 		'practice' => false,
 		'botplay' => false,
-		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
-		'opponentplay' => false,
-		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
-		'nodroppenalty' => false // Hold drops don't cause misses
+		'opponentplay' => false
 	];
 
 	public var comboOffset:Array<Int> = [0, 0, 0, 0];
-	public var keyViewerOffset:Array<Int> = [0, 0]; // X, Y offset for key viewer
-	public var keyViewerColor:String = 'Gray'; // Color name for key viewer
 	public var ratingOffset:Int = 0;
-	public var flawlessWindow:Float = 20.0;
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;
 	public var badWindow:Float = 135.0;
 	public var safeFrames:Float = 10.0;
-	public var guitarHeroSustains:Bool = false;
+	public var guitarHeroSustains:Bool = true;
 	public var discordRPC:Bool = true;
+	public var loadingScreen:Bool = true;
 	public var language:String = 'en-US';
-	public var abbreviateScore:Bool = true;
-	public var dynamicComboDigits:Bool = false;
-	public var newfreeplay:Bool = true;
-	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
-	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
-	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
-	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
-	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
-	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine
 }
 
 class ClientPrefs {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
-	public static var judgementCounter:Bool = false;
-	public static final FRAMERATE_MODES:Array<String> = ['Psych', 'Fixed', 'Interpolated'];
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -203,7 +120,6 @@ class ClientPrefs {
 		
 		'debug_1'		=> [SEVEN],
 		'debug_2'		=> [EIGHT],
-		'debug_3'		=> [SIX],
 		
 		'fullscreen'	=> [F11]
 	];
@@ -242,17 +158,6 @@ class ClientPrefs {
 	public static var defaultKeys:Map<String, Array<FlxKey>> = null;
 	public static var defaultButtons:Map<String, Array<FlxGamepadInputID>> = null;
 	public static var defaultMobileBinds:Map<String, Array<MobileInputID>> = null;
-	static var controlsSaveCache:FlxSave = null;
-
-	static function getControlsSave():FlxSave
-	{
-		if (controlsSaveCache == null)
-		{
-			controlsSaveCache = new FlxSave();
-			controlsSaveCache.bind('controls_v3', CoolUtil.getSavePath());
-		}
-		return controlsSaveCache;
-	}
 
 	public static function resetKeys(controller:Null<Bool> = null) //Null = both, False = Keyboard, True = Controller
 	{
@@ -284,46 +189,16 @@ class ClientPrefs {
 		defaultMobileBinds = mobileBinds.copy();
 	}
 
-	#if android
-	public static function loadStorageTypeEarly():Void
-	{
-		var save:FlxSave = new FlxSave();
-		save.bind('funkin', CoolUtil.getSavePath());
-		if (save != null && save.data != null && Reflect.hasField(save.data, 'storageType'))
-		{
-			var storedType = Reflect.field(save.data, 'storageType');
-			if (storedType != null)
-			{
-				data.storageType = switch (storedType)
-				{
-					case 'EXTERNAL': 'EXTERNAL';
-					case 'INTERNAL', 'EXTERNAL_DATA': 'INTERNAL';
-					default: 'INTERNAL';
-				};
-			}
-		}
-	}
-	#end
-
 	public static function saveSettings() {
-		syncThemeModeFlags();
-		normalizeFPSCounterPrefs();
-
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
 
 		#if ACHIEVEMENTS_ALLOWED Achievements.save(); #end
 		FlxG.save.flush();
-		#if android
-		StorageUtil.saveStorageTypePreference(data.storageType);
-		#end
-
-        //Wow counter =p
-        Reflect.setField(FlxG.save.data, "judgementCounter", judgementCounter);
-		data.judgementCounter = judgementCounter;
 
 		//Placing this in a separate save so that it can be manually deleted without removing your Score and stuff
-		var save = getControlsSave();
+		var save:FlxSave = new FlxSave();
+		save.bind('controls_v3', CoolUtil.getSavePath());
 		save.data.keyboard = keyBinds;
 		save.data.gamepad = gamepadBinds;
 		save.data.mobile = mobileBinds;
@@ -337,56 +212,34 @@ class ClientPrefs {
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
-
-		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
-		{
-			if (Reflect.hasField(FlxG.save.data, 'showFPS') && Reflect.field(FlxG.save.data, 'showFPS') == false)
-				data.fpsCounterMode = 'Hidden';
-			else if (Reflect.hasField(FlxG.save.data, 'fpsDebugLevel'))
-				data.fpsCounterMode = fpsModeFromLegacy(Std.int(Reflect.field(FlxG.save.data, 'fpsDebugLevel')));
-		}
-		normalizeFPSCounterPrefs();
-
-		var storedFramerateMode:Dynamic = Reflect.field(FlxG.save.data, 'framerateMode');
-		if (storedFramerateMode == null)
-			data.framerateMode = Reflect.hasField(FlxG.save.data, 'fpsRework') ? ((Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated') : defaultData.framerateMode;
-		else
-			data.framerateMode = Std.string(storedFramerateMode);
-		data.framerateMode = normalizeFramerateMode(data.framerateMode);
-		syncLegacyFpsReworkFlag();
-		if (!Reflect.hasField(FlxG.save.data, 'menuThemeMode'))
-			data.menuThemeMode = data.menuDarkTheme ? 'Dark' : 'Light';
-		syncThemeModeFlags();
 		
 		if(Main.fpsVar != null)
-			Main.fpsVar.applyPrefs();
+			Main.fpsVar.visible = data.showFPS;
 
 		#if (!html5 && !switch)
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 
 		if(FlxG.save.data.framerate == null) {
 			final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-			data.framerate = Std.int(FlxMath.bound(refreshRate, #if mobile 30 #else 60 #end, 240));
+			data.framerate = Std.int(FlxMath.bound(refreshRate, 60, 240));
 		}
 		#end
 
-		if (Reflect.hasField(FlxG.save.data, "judgementCounter"))
-            judgementCounter = !!Reflect.field(FlxG.save.data, "judgementCounter");
-		    judgementCounter = data.judgementCounter;
-
-		applyFramePacing();
-
-		#if (!html5 && !switch)
-		try
+		if (data.fpsRework)
+			FlxG.stage.window.frameRate = data.framerate;
+		else
 		{
-			if (FlxG.stage != null && FlxG.stage.application != null && FlxG.stage.application.window != null)
-				Reflect.setProperty(FlxG.stage.application.window, 'vsync', data.vsync);
+			if (data.framerate > FlxG.drawFramerate)
+			{
+				FlxG.updateFramerate = data.framerate;
+				FlxG.drawFramerate = data.framerate;
+			}
+			else
+			{
+				FlxG.drawFramerate = data.framerate;
+				FlxG.updateFramerate = data.framerate;
+			}
 		}
-		catch (e:Dynamic)
-		{
-			// Some targets may not expose window vsync.
-		}
-		#end
 
 		if(FlxG.save.data.gameplaySettings != null)
 		{
@@ -427,159 +280,6 @@ class ClientPrefs {
 			}
 			reloadVolumeKeys();
 		}
-	}
-
-	public static function applyFramePacing():Void
-	{
-		data.framerateMode = normalizeFramerateMode(data.framerateMode);
-		syncLegacyFpsReworkFlag();
-
-		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
-		var drawFramerate:Int = safeFramerate;
-
-		switch (data.framerateMode)
-		{
-			case 'Psych':
-				FlxG.fixedTimestep = false;
-				FlxG.updateFramerate = safeFramerate;
-				FlxG.drawFramerate = safeFramerate;
-				FlxG.maxElapsed = 0.1;
-
-			case 'Fixed':
-				FlxG.fixedTimestep = true;
-				FlxG.updateFramerate = safeFramerate;
-				FlxG.drawFramerate = safeFramerate;
-				FlxG.maxElapsed = 1 / safeFramerate;
-
-			default:
-				drawFramerate = getInterpolatedDrawFramerate(safeFramerate);
-				FlxG.fixedTimestep = true;
-				FlxG.updateFramerate = safeFramerate;
-				FlxG.drawFramerate = drawFramerate;
-				FlxG.maxElapsed = 1 / safeFramerate;
-		}
-
-		drawFramerate = FlxG.drawFramerate;
-
-		#if (!html5 && !switch)
-		try
-		{
-			if (FlxG.stage != null)
-			{
-				FlxG.stage.frameRate = drawFramerate;
-				if (FlxG.stage.window != null)
-					FlxG.stage.window.frameRate = drawFramerate;
-			}
-		}
-		catch (e:Dynamic)
-		{
-			// Ignore targets that do not expose window frame rate at runtime.
-		}
-		#end
-	}
-
-	public static function normalizeFPSCounterPrefs():Void
-	{
-		final modes:Array<String> = ['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug'];
-		if (data.fpsCounterMode == null || !modes.contains(data.fpsCounterMode))
-			data.fpsCounterMode = #if mobile 'Visible No Background' #else 'Visible with Background' #end;
-
-		data.fpsDebugLevel = switch (data.fpsCounterMode)
-		{
-			case 'Hidden': 0;
-			case 'Visible No Background': 1;
-			case 'Visible with Background': 2;
-			case 'Basic Debug': 3;
-			case 'Extended Debug': 4;
-			default: 2;
-		}
-		data.showFPS = data.fpsCounterMode != 'Hidden';
-	}
-
-	static function fpsModeFromLegacy(level:Int):String
-	{
-		return switch (level)
-		{
-			case 0: 'Visible No Background';
-			case 1: 'Visible with Background';
-			case 2: 'Basic Debug';
-			case 3: 'Extended Debug';
-			default: #if mobile 'Hidden' #else 'Visible with Background' #end;
-		}
-	}
-
-	public static function getTargetWindowFramerate():Int
-	{
-		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
-		return switch (normalizeFramerateMode(data.framerateMode))
-		{
-			case 'Interpolated':
-				getInterpolatedDrawFramerate(safeFramerate);
-			default:
-				safeFramerate;
-		};
-	}
-
-	static function normalizeFramerateMode(mode:String):String
-	{
-		if (mode == null)
-			return 'Interpolated';
-
-		for (allowedMode in FRAMERATE_MODES)
-			if (allowedMode == mode)
-				return allowedMode;
-
-		return switch (mode.toLowerCase())
-		{
-			case 'psych': 'Psych';
-			case 'fixed': 'Fixed';
-			default: 'Interpolated';
-		};
-	}
-
-	static function syncLegacyFpsReworkFlag():Void
-	{
-		data.fpsRework = normalizeFramerateMode(data.framerateMode) != 'Psych';
-	}
-
-	public static function syncThemeModeFlags():Void
-	{
-		var themeMode:String = data.menuThemeMode;
-		if (themeMode == null || themeMode.length == 0)
-			themeMode = data.menuDarkTheme ? 'Dark' : 'Light';
-
-		data.menuThemeMode = switch (themeMode.toLowerCase())
-		{
-			case 'dark': 'Dark';
-			default: 'Light';
-		};
-		data.menuDarkTheme = data.menuThemeMode == 'Dark';
-		data.menuAccentColorCustom = 0xFF000000 | (data.menuAccentColorCustom & 0x00FFFFFF);
-	}
-
-	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int
-	{
-		#if mobile
-		return safeFramerate;
-		#end
-
-		#if (!html5 && !switch)
-		try
-		{
-			if (FlxG.stage != null && FlxG.stage.application != null && FlxG.stage.application.window != null)
-			{
-				var refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-				if (refreshRate > 0)
-					return Std.int(FlxMath.bound(refreshRate, safeFramerate, Std.int(Math.min(240, safeFramerate * 2))));
-			}
-		}
-		catch (e:Dynamic)
-		{
-			// Fallback to the gameplay framerate when refresh rate is unavailable.
-		}
-		#end
-
-		return safeFramerate;
 	}
 
 	inline public static function getGameplaySetting(name:String, defaultValue:Dynamic = null, ?customDefaultValue:Bool = false):Dynamic

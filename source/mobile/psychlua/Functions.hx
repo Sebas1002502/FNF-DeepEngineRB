@@ -1,3 +1,25 @@
+/*
+ * Copyright (C) 2025 Mobile Porting Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package mobile.psychlua;
 
 import psychlua.CustomSubstate;
@@ -6,9 +28,7 @@ import lime.ui.Haptic;
 import psychlua.FunkinLua;
 import psychlua.LuaUtils;
 import mobile.backend.TouchUtil;
-#if android
-import mobile.backend.PsychJNI;
-#end
+#if android import mobile.backend.PsychJNI; #end
 
 /**
  * ...
@@ -305,15 +325,17 @@ class MobileFunctions
 #if android
 class AndroidFunctions
 {
+	// static var spicyPillow:AndroidBatteryManager = new AndroidBatteryManager();
 	public static function implement(funk:FunkinLua)
 	{
 		var lua:State = funk.lua;
-		Lua_helper.add_callback(lua, "isRooted", AndroidTools.isRooted());
+		// Lua_helper.add_callback(lua, "isRooted", AndroidTools.isRooted());
 		Lua_helper.add_callback(lua, "isDolbyAtmos", AndroidTools.isDolbyAtmos());
 		Lua_helper.add_callback(lua, "isAndroidTV", AndroidTools.isAndroidTV());
 		Lua_helper.add_callback(lua, "isTablet", AndroidTools.isTablet());
 		Lua_helper.add_callback(lua, "isChromebook", AndroidTools.isChromebook());
 		Lua_helper.add_callback(lua, "isDeXMode", AndroidTools.isDeXMode());
+		// Lua_helper.add_callback(lua, "isCharging", spicyPillow.isCharging());
 
 		Lua_helper.add_callback(lua, "backJustPressed", FlxG.android.justPressed.BACK);
 		Lua_helper.add_callback(lua, "backPressed", FlxG.android.pressed.BACK);

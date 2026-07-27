@@ -1,8 +1,5 @@
 package backend;
 
-import backend.AssetLoader;
-import backend.ui.md3.NetworkCheckToast;
-import openfl.utils.AssetType;
 import openfl.utils.Assets;
 import lime.utils.Assets as LimeAssets;
 
@@ -11,125 +8,31 @@ import lime.utils.Assets as LimeAssets;
 #end
 class CoolUtil
 {
-	public static var hasUpdate:Bool = false;
-	public static var latestVersion:String = "";
-	public static final haxeExtensions:Array<String> = ["hx", "hscript", "hsc", "hxs"];
-
 	public static function checkForUpdates(url:String = null):String {
 		if (url == null || url.length == 0)
-			url = "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/refs/heads/main/gitVersion.txt";
-		
-		var currentVersion:String = states.MainMenuState.plusEngineVersion.trim();
-		hasUpdate = false;
-		latestVersion = currentVersion;
-		
+			url = "https://raw.githubusercontent.com/MobilePorting/FNF-PsychEngine-Mobile/main/gitVersion.txt";
+		var version:String = states.MainMenuState.psychEngineVersion.trim();
 		if(ClientPrefs.data.checkForUpdates) {
 			trace('checking for updates...');
-			NetworkCheckToast.requestShow('Checking version');
-			#if (target.threaded && sys)
-			ThreadUtil.execAsync(function()
-			{
-				checkForUpdatesBlocking(url, currentVersion);
-			});
-			#else
-			checkForUpdatesBlocking(url, currentVersion);
-			#end
-		}
-		return currentVersion;
-	}
-
-	static function checkForUpdatesBlocking(url:String, currentVersion:String):Void
-	{
-		var loaded:Bool = false;
-		try
-		{
 			var http = new haxe.Http(url);
 			http.onData = function (data:String)
 			{
-				loaded = true;
-				var remoteVersion:String = data.split('\n')[0].trim();
-				trace('version online: $remoteVersion, your version: $currentVersion');
-				
-				var cmp:Int = compareVersions(currentVersion, remoteVersion);
-				if(cmp == -1) {
-					trace('update available! $currentVersion -> $remoteVersion');
-					hasUpdate = true;
-					latestVersion = remoteVersion;
-				} else if(cmp == 0) {
-					trace('versions match! no update needed');
-					hasUpdate = false;
-				} else {
-					trace('local version is newer than remote; skipping update warning');
-					hasUpdate = false;
-				}
-				
+				var newVersion:String = data.split('\n')[0].trim();
+				trace('version online: $newVersion, your version: $version');
+				if(newVersion != version) {
+					trace('versions arent matching! please update');
+					version = newVersion;
 					http.onData = null;
 					http.onError = null;
 					http = null;
+				}
 			}
 			http.onError = function (error) {
-				trace('error checking for updates: $error');
-				hasUpdate = false;
+				trace('error: $error');
 			}
 			http.request();
 		}
-		catch (e:Dynamic)
-		{
-			trace('error checking for updates: $e');
-			hasUpdate = false;
-		}
-		NetworkCheckToast.requestDone(loaded ? 'Retrieved' : 'No connection');
-	}
-
-	private static function compareVersions(version1:String, version2:String):Int
-	{
-		if (version1 == null || version2 == null)
-			return 0;
-
-		version1 = version1.trim();
-		version2 = version2.trim();
-		if (version1 == version2)
-			return 0;
-
-		var v1 = parseVersion(version1);
-		var v2 = parseVersion(version2);
-
-		if (v1.major < v2.major) return -1;
-		if (v1.major > v2.major) return 1;
-		if (v1.minor < v2.minor) return -1;
-		if (v1.minor > v2.minor) return 1;
-		if (v1.patch < v2.patch) return -1;
-		if (v1.patch > v2.patch) return 1;
-		return 0;
-	}
-
-	private static function parseVersion(version:String):{major:Int, minor:Int, patch:Int}
-	{
-		var cleaned = version.split('-')[0];
-		cleaned = cleaned.split('+')[0];
-		cleaned = normalizeDisplaySuffix(cleaned);
-		var parts = cleaned.split('.');
-
-		inline function toIntOr0(v:String):Int
-		{
-			var parsed:Null<Int> = Std.parseInt(v);
-			return parsed == null ? 0 : parsed;
-		}
-
-		var major:Int = parts.length > 0 ? toIntOr0(parts[0]) : 0;
-		var minor:Int = parts.length > 1 ? toIntOr0(parts[1]) : 0;
-		var patch:Int = parts.length > 2 ? toIntOr0(parts[2]) : 0;
-		return {major: major, minor: minor, patch: patch};
-	}
-
-	private static function normalizeDisplaySuffix(version:String):String
-	{
-		if (version == null) return "";
-		var trimmed = version.trim();
-		var regex:EReg = ~/\s*\([^\)]*\)\s*$/;
-		if (regex.match(trimmed))
-			return regex.matchedLeft().trim();
-		return trimmed;
+		return version;
 	}
 	inline public static function quantize(f:Float, snap:Float){
 		// changed so this actually works lol
@@ -141,16 +44,14 @@ class CoolUtil
 	inline public static function capitalize(text:String)
 		return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
 
-	public static function boundTo(value:Float, min:Float, max:Float):Float {
-		var newValue:Float = value;
-		if(newValue < min) newValue = min;
-		else if(newValue > max) newValue = max;
-		return newValue;
-	}
-
 	inline public static function coolTextFile(path:String):Array<String>
 	{
-		var daList:String = AssetLoader.loadText(path);
+		var daList:String = null;
+		#if (sys && MODS_ALLOWED)
+		if(FileSystem.exists(path)) daList = File.getContent(path);
+		#else
+		if(Assets.exists(path)) daList = Assets.getText(path);
+		#end
 		return daList != null ? listFromString(daList) : [];
 	}
 
@@ -299,24 +200,11 @@ class CoolUtil
 
 	public static function showPopUp(message:String, title:String):Void
 	{
-		#if android
-		if (mobile.backend.AndroidNative.showAlert(title, message))
-			return;
-		#end
-
-		if (FlxG.stage != null && FlxG.stage.window != null)
-			FlxG.stage.window.alert(message, title);
-	}
-
-	public static function showToast(message:String, ?long:Bool = false):Void
-	{
-		if (message == null || message.length == 0)
-			return;
-
-		#if android
-		if (mobile.backend.AndroidNative.showToast(message, long))
-			return;
-		#end
+		/*#if android
+		AndroidTools.showAlertDialog(title, message, {name: "OK", func: null}, null);
+		#else*/
+		FlxG.stage.window.alert(message, title);
+		//#end
 	}
 
 	#if cpp

@@ -1,100 +1,32 @@
-![Logo Off](docs/img/PlusEngineLogo.png)
+![PsychionalEngineLogo](docs/img/PsychEngineMobileLogoTweak.png)
 
-<div align="center">
+Engine originally used on [Mind Games Mod](https://gamebanana.com/mods/301107), intended to be a fix for the vanilla version's many issues while keeping the casual play aspect of it. Also aiming to be an easier alternative to newbie coders.
 
-**EN-US | [ES-LA](README.es-LA.md) | [ID-ID](README.id-ID.md)**
+## Customization:
 
+If you wish to disable things like *Lua Scripts* or *Video Cutscenes*, you can refer to the `Project.xml` file.
 
-![Made with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Made+with&secondaryLabel=Haxe&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%23fea948&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&tertiaryBGColor=%23c14dff&tertiaryTextColor=%23FFFFFF&tertiaryFontSize=12&tertiaryFontWeight=700&tertiaryLetterSpacing=2&tertiaryFontFamily=Arial&tertiaryTextTransform=capitalize&tertiaryIconColor=%23FFFFFF&tertiaryIconSize=16&tertiaryIconPosition=left&secondaryIcon=haxe&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)
-[![Design with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Design+with&secondaryLabel=Material+Design&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%2300639b&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=materialdesign&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://m3.material.io/)
+Inside `Project.xml`, you will find several variables to customize Psych Engine to your liking.
 
-[![VirusTotal](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Verified+by&secondaryLabel=VirusTotal&primaryBGColor=%237090d7&primaryTextColor=%23ffffff&secondaryBGColor=%23161625&secondaryTextColor=%2386aaf9&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=virustotal&secondaryIconColor=%2386aaf9&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.virustotal.com/)
-[![Play Console](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Certified+by&secondaryLabel=Play+Console&primaryBGColor=%23ffffff&primaryTextColor=%2368a4f1&secondaryBGColor=%23488fef&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=googleplay&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://developer.android.com/distribute/console)
+To start you off, disabling *Video Cutscenes* should be simple, simply delete the line `"VIDEOS_ALLOWED"` or comment it out by wrapping the line in XML-like comments, like this: `<!-- YOUR_LINE_HERE -->`
 
-[![License](https://img.shields.io/github/license/LeninAsto/FNF-PlusEngine)](LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/LeninAsto/FNF-PlusEngine)](https://github.com/LeninAsto/FNF-PlusEngine/releases)
-[![GitHub issues](https://img.shields.io/github/issues/LeninAsto/FNF-PlusEngine)](https://github.com/LeninAsto/FNF-PlusEngine/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/LeninAsto/FNF-PlusEngine)](https://github.com/LeninAsto/FNF-PlusEngine/pulls)
-[![Github actions](https://img.shields.io/github/actions/workflow/status/Psych-Plus-Team/FNF-PlusEngine/main.yml
-)](https://github.com/LeninAsto/FNF-PlusEngine/actions)
+Same goes for *Lua Scripts*, comment out or delete the line with `LUA_ALLOWED`, this and other customization options are all available within the `Project.xml` file.
 
-[![Android](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Android&primaryBGColor=%2322ce75&primaryTextColor=%23FFFFFF&secondaryBGColor=%2332de84&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=capitalize&secondaryIcon=android&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.android.com/)
-[![iOS](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=iOS&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=ios&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/ios/)
-[![Windows](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Windows&primaryBGColor=%23005fa8&primaryTextColor=%23FFFFFF&secondaryBGColor=%230078d4&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&scale=0.7&borderRadius=10)](https://www.microsoft.com/windows)
-[![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
-[![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
+## Softcoding (.lua/.hx)
+For this you can head over to [the wiki](https://shadowmario.github.io/psychengine.lua)
 
-Engine based in Psych 1.0.4 with modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
-
-[![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Join+to+the+&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
-
-</div>
-
-### Contributors Psych - Plus Engine in general:
-
-<a href="https://github.com/Psych-Plus-Team/FNF-PlusEngine/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Psych-Plus-Team/FNF-PlusEngine&max=10" />
-  And 100+ others...
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
-
-Contributions are welcome! If you have ideas, improvements, or fixes, feel free to fork the repo and open a pull request.
-
-> This project is subject to bugs, fixes, improvements and changes.
-
-# About Code Usage
-
-This project is **open to learn, build, and improve**.  
-You’re free to use it as a reference, a base, or a learning resource.
-
-Because code is not a buried treasure —  
-**code lives when it’s shared**.
-
-📚 **Learning > hoarding**  
-💡 **Sharing > flexing**  
-🚀 **Building > gatekeeping**
-
-I don’t really believe in the mindset of:
-> “Don’t touch my code, don't create other engine, don't use my engine's stuffs, bruh...”
-
-Bro…  
-**you’re not going to heaven with your private repository under your arm!** 
-
-Source code is:
-- knowledge  
-- practice  
-- mistakes  
-- evolution  
-
-If someone improves something I made, **respect** 🫡  
-That’s how this has always worked:  
-learn from the past to build the future.
-
-### ⚠️ Important note
-Don’t claim others’ work as your own or sell it as original.  
-Respect the effort, learn from it, and create something better.
-
-To those who share: thank you 💙  
-To those who hide code out of fear or envy:  
-relax — progress doesn’t wait.
-
-**Happy coding.**
-
-## Developer Credits:
-* Lenin Asto - Main Programmer for Plus Engine Fork
-* Legacy Odyssey - Co-Programmer for Plus Engine Fork
-
-## Original Credits:
-* Shadow Mario - Main Programmer and Head of Psych Engine.
-* Riveren - Main Artist/Animator of Psych Engine.
+There you can learn how to use the 212 PlayState funcions in your mod!
 
 ## Mobile Credits:
 * Homura - Head Porter of Psych Engine Mobile.
 * Karim - Second Porter of Psych Engine Mobile.
 * Moxie - Helper of Psych Engine Mobile.
 
-## Special Thanks
+## Credits:
+* Shadow Mario - Main Programmer and Head of Psych Engine.
+* Riveren - Main Artist/Animator of Psych Engine.
+
+### Psych Special Thanks
 * bbpanzu - Ex-Team Member (Programmer).
 * crowplexus - HScript Iris, Input System v3, and Other PRs.
 * Kamizeta - Creator of Pessy, Psych Engine's mascot.
@@ -112,47 +44,7 @@ relax — progress doesn’t wait.
 
 ***
 
-# Build Mobile:
-You need to have:
-
-- Android Build Tools / Android Command Line Tools
-- Android SDK 36
-- Android NDK r27d
-- Java JDK 21
-
-# Features after 1.0.4
-
-- Variables for window and system management in Lua: Many variables were added, whether to hide the taskbar or window borders, etc.
-- Key Viewer
-- Modchart support and settings.
-![Modchart](docs/img/modchart.gif)
-- New Gameplay Changers (Opponent Mode, No Drop Penalty, Perfect Only).
-- You can choose your default accuracy system. ITG, Psych, DJMax, Wife3, osu!, Simple
-* Support for NotITG levels (without modifiers) and Stepmania, includes UI
-![Stepmania](docs/img/Stepmania.png)
-- Android support
-- Added the "miss" and "combo broken" sprites
-- Added the option for "bad" and "shit" to break the combo
-- New VideoSprite functionality with optimized hxvlc
-- New shader compatibility depending on your graphics card
-- Judgement Counter.
-- Advanced variables in Lua for the craziest Modcharts.
-- New results State and really cool.
-- Compatible wth hxcodec videos from Psych mods 0.6.3 and 0.7.3.
-- Smooth Health Bar
-* +5 Languages availables
-![Languages](docs/img/Languages.png)
-- New cool transicioning
-- If you are in Charting Mode the step, beat, and section will be displayed in gameplay.
-- FPS Counter rework
-- Trace in Game
-- Rework the OutdatedSubstate.hx
-* Rework the FreeplayState.hx
-![Freeplay](docs/img/Freeplay.png)
-![Freeplay Diff](docs/img/FreeplayDiff.png)
-- More things will continue to be added in the future...
-
-# Main Features
+# Features
 
 ## Attractive animated dialogue boxes:
 

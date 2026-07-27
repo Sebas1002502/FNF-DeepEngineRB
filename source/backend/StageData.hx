@@ -1,6 +1,7 @@
 package backend;
 
-import backend.AssetLoader;
+import openfl.utils.Assets;
+import haxe.Json;
 import backend.Song;
 import psychlua.ModchartSprite;
 
@@ -78,13 +79,13 @@ class StageData {
 		try
 		{
 			var path:String = Paths.getPath('stages/' + stage + '.json', TEXT, null, true);
-			var rawJson:String = AssetLoader.loadText(path);
-			if(rawJson != null && rawJson.length > 0)
-				return cast tjson.TJSON.parse(rawJson);
-		}
-		catch (e:Dynamic)
-		{
-			trace('StageData error on "$stage": $e');
+			#if MODS_ALLOWED
+			if(FileSystem.exists(path))
+				return cast tjson.TJSON.parse(File.getContent(path));
+			#else
+			if(Assets.exists(path))
+				return cast tjson.TJSON.parse(Assets.getText(path));
+			#end
 		}
 		return dummy();
 	}

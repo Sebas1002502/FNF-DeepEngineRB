@@ -13,7 +13,7 @@ import flixel.util.FlxStringUtil;
 class DiscordClient
 {
 	public static var isInitialized:Bool = false;
-	private inline static final _defaultID:String = "1449954550134870079";
+	private inline static final _defaultID:String = "863222024192262205";
 	public static var clientID(default, set):String = _defaultID;
 	private static var presence:DiscordPresence = new DiscordPresence();
 	// hides this field from scripts and reflection in general
@@ -39,7 +39,6 @@ class DiscordClient
 	{
 		isInitialized = false;
 		Discord.Shutdown();
-		trace("Discord Client shutdown");
 	}
 	
 	private static function onReady(request:cpp.RawConstPointer<DiscordUser>):Void
@@ -109,7 +108,7 @@ class DiscordClient
 		presence.details = details;
 		presence.smallImageKey = smallImageKey;
 		presence.largeImageKey = largeImageKey;
-		presence.largeImageText = "Plus Engine v" + states.MainMenuState.plusEngineVersion;
+		presence.largeImageText = "Engine Version: " + states.MainMenuState.psychEngineVersion;
 		// Obtained times are in milliseconds so they are divided so Discord can use it
 		presence.startTimestamp = Std.int(startTimestamp / 1000);
 		presence.endTimestamp = Std.int(endTimestamp / 1000);

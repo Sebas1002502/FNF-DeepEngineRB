@@ -7,7 +7,7 @@ import lime.utils.Assets;
 import openfl.display.BitmapData;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-
+import flixel.graphics.FlxGraphic;
 import flixel.system.FlxAssets;
 import flixel.FlxState;
 
@@ -15,10 +15,11 @@ import flash.media.Sound;
 
 import backend.Song;
 import backend.StageData;
+import objects.Character;
 
+import sys.thread.Thread;
 import sys.thread.Mutex;
 
-import objects.GlobalLoadingOverlay;
 import objects.Note;
 import objects.NoteSplash;
 
@@ -38,13 +39,6 @@ class LoadingState extends MusicBeatState
 	static var requestedBitmaps:Map<String, BitmapData> = [];
 	static var mutex:Mutex;
 	static var threadPool:FixedThreadPool = null;
-	
-	// Timeout system
-	public static var returnState:FlxState = null; // Estado al que volver si falla la carga
-	public var loadingTimer:Float = 0; // Contador de tiempo de carga
-	public var timeoutWarning:FlxText; // Mensaje de advertencia
-	public var canEscape:Bool = false; // Si se puede presionar ESC para salir
-	static final TIMEOUT_DURATION:Float = 5.0; // 5 segundos
 
 	function new(target:FlxState, stopMusic:Bool)
 	{
@@ -57,35 +51,35 @@ class LoadingState extends MusicBeatState
 	inline static public function loadAndSwitchState(target:FlxState, stopMusic = false, intrusive:Bool = true)
 		MusicBeatState.switchState(getNextState(target, stopMusic, intrusive));
 	
-	public var target:FlxState = null;
-	public var stopMusic:Bool = false;
-	public var dontUpdate:Bool = false;
+	var target:FlxState = null;
+	var stopMusic:Bool = false;
+	var dontUpdate:Bool = false;
 
-	public var barGroup:FlxSpriteGroup;
-	public var bar:FlxSprite;
-	public var barWidth:Int = 0;
-	public var intendedPercent:Float = 0;
-	public var curPercent:Float = 0;
-	public var stateChangeDelay:Float = 0;
+	var barGroup:FlxSpriteGroup;
+	var bar:FlxSprite;
+	var barWidth:Int = 0;
+	var intendedPercent:Float = 0;
+	var curPercent:Float = 0;
+	var stateChangeDelay:Float = 0;
 
 	#if PSYCH_WATERMARKS
-	public var logo:FlxSprite;
-	public var pessy:FlxSprite;
-	public var loadingText:FlxText;
+	var logo:FlxSprite;
+	var pessy:FlxSprite;
+	var loadingText:FlxText;
 
-	public var timePassed:Float;
-	public var shakeFl:Float;
-	public var shakeMult:Float = 0;
+	var timePassed:Float;
+	var shakeFl:Float;
+	var shakeMult:Float = 0;
 	
-	public var isSpinning:Bool = false;
-	public var spawnedPessy:Bool = false;
-	public var pressedTimes:Int = 0;
+	var isSpinning:Bool = false;
+	var spawnedPessy:Bool = false;
+	var pressedTimes:Int = 0;
 	#else
-	public var funkay:FlxSprite;
+	var funkay:FlxSprite;
 	#end
 
 	#if HSCRIPT_ALLOWED
-	public var hscript:HScript;
+	var hscript:HScript;
 	#end
 	override function create()
 	{
@@ -122,7 +116,7 @@ class LoadingState extends MusicBeatState
 					if(hscript.exists('onCreate'))
 					{
 						hscript.call('onCreate');
-						trace('HScript (Psych 1.0.x) file loaded successfully: $scriptPath');
+						trace('initialized hscript interp successfully: $scriptPath');
 						return super.create();
 					}
 					else
@@ -177,19 +171,7 @@ class LoadingState extends MusicBeatState
 		funkay.updateHitbox();
 		addBehindBar(funkay);
 		#end
-		
-		// Timeout warning message
-		timeoutWarning = new FlxText(0, FlxG.height - 100, FlxG.width, "", 24);
-		timeoutWarning.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.RED, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		timeoutWarning.borderSize = 2;
-		timeoutWarning.visible = false;
-		add(timeoutWarning);
-		
-		// Añadir touchpad para Android
-		addTouchPad('NONE', 'B');
-		
 		super.create();
-		GlobalLoadingOverlay.showPersistent();
 
 		if (stateChangeDelay <= 0 && checkLoaded())
 		{
@@ -208,47 +190,6 @@ class LoadingState extends MusicBeatState
 	{
 		super.update(elapsed);
 		if (dontUpdate) return;
-		GlobalLoadingOverlay.showPersistent();
-		
-		// Timeout system - incrementar el temporizador
-		if (!transitioning && !finishedLoading)
-		{
-			loadingTimer += elapsed;
-			
-			// Si pasan más de 10 segundos, mostrar mensaje de escape
-			if (loadingTimer >= TIMEOUT_DURATION && !canEscape)
-			{
-				canEscape = true;
-				timeoutWarning.text = Language.getPhrase('loading_timeout', 'Loading is taking too long...\nPress ESC to return', []);
-				timeoutWarning.visible = true;
-				FlxG.sound.play(Paths.sound('cancelMenu'));
-			}
-			
-			// Si se puede escapar y se presiona ESC o botón B del touchpad, volver al estado anterior
-			if (canEscape && (FlxG.keys.justPressed.ESCAPE || (touchPad != null && touchPad.buttonB.justPressed)))
-			{
-				transitioning = true;
-				FlxG.sound.play(Paths.sound('cancelMenu'));
-				
-				// Limpiar recursos
-				if (threadPool != null)
-				{
-					threadPool.shutdown();
-					threadPool = null;
-				}
-				
-				// Volver al estado de retorno si existe, sino a MainMenuState
-				var targetState:FlxState = (returnState != null) ? returnState : new MainMenuState();
-				
-				if (stopMusic && FlxG.sound.music != null)
-					FlxG.sound.music.stop();
-				
-				FlxG.camera.fade(FlxColor.BLACK, 0.3, false, function() {
-					MusicBeatState.switchState(targetState);
-				});
-				return;
-			}
-		}
 
 		if (!transitioning)
 		{
@@ -371,7 +312,6 @@ class LoadingState extends MusicBeatState
 	function onLoad()
 	{
 		_loaded();
-		GlobalLoadingOverlay.showPersistent();
 
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -659,39 +599,14 @@ class LoadingState extends MusicBeatState
 
 	public static function clearInvalids()
 	{
-		dedupe(imagesToPrepare);
-		dedupe(soundsToPrepare);
-		dedupe(musicToPrepare);
-		dedupe(songsToPrepare);
-
 		clearInvalidFrom(imagesToPrepare, 'images', '.png', IMAGE);
 		clearInvalidFrom(soundsToPrepare, 'sounds', '.${Paths.SOUND_EXT}', SOUND);
-		clearInvalidFrom(musicToPrepare, 'music', '.${Paths.SOUND_EXT}', SOUND);
+		clearInvalidFrom(musicToPrepare, 'music',' .${Paths.SOUND_EXT}', SOUND);
 		clearInvalidFrom(songsToPrepare, 'songs', '.${Paths.SOUND_EXT}', SOUND, 'songs');
 
 		for (arr in [imagesToPrepare, soundsToPrepare, musicToPrepare, songsToPrepare])
 			while (arr.contains(null))
 				arr.remove(null);
-	}
-
-	static function dedupe(arr:Array<String>):Void
-	{
-		var seen:Map<String, Bool> = [];
-		var i:Int = 0;
-		while (i < arr.length)
-		{
-			var item:String = arr[i];
-			var key:String = item == null ? null : item.trim();
-			if (key == null || seen.exists(key))
-			{
-				arr.splice(i, 1);
-				continue;
-			}
-
-			seen.set(key, true);
-			if (key != item) arr[i] = key;
-			i++;
-		}
 	}
 
 	static function clearInvalidFrom(arr:Array<String>, prefix:String, ext:String, type:AssetType, ?parentFolder:String = null)
@@ -881,9 +796,9 @@ class LoadingState extends MusicBeatState
 			#if TRANSLATIONS_ALLOWED requestKey = Language.getFileTranslation(requestKey); #end
 			if(requestKey.lastIndexOf('.') < 0) requestKey += '.png';
 
-			var file:String = Paths.getPath(requestKey, IMAGE);
-			if (!Paths.currentTrackedAssets.exists(file))
+			if (!Paths.currentTrackedAssets.exists(requestKey))
 			{
+				var file:String = Paths.getPath(requestKey, IMAGE);
 				if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, IMAGE))
 				{
 					#if sys
@@ -901,10 +816,7 @@ class LoadingState extends MusicBeatState
 				else trace('no such image $key exists');
 			}
 
-			mutex.acquire();
-			Paths.localTrackedAssets.push(file);
-			mutex.release();
-			return Paths.currentTrackedAssets.get(file).bitmap;
+			return Paths.currentTrackedAssets.get(requestKey).bitmap;
 		}
 		catch(e:haxe.Exception)
 		{

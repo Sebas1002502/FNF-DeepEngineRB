@@ -5,26 +5,8 @@ package backend;
 
 class PsychCamera extends FlxCamera
 {
-	var _previousScroll:FlxPoint = FlxPoint.get();
-	var _simulationScroll:FlxPoint = FlxPoint.get();
-	var _interpolationReady:Bool = false;
-	var _interpolationApplied:Bool = false;
-	var _lastDebugFilters:Dynamic = null;
-	var _debugFilterChanges:Int = 0;
-	var _debugSlowFrames:Int = 0;
-	var _debugTimer:Float = 0;
-
 	override public function update(elapsed:Float):Void
 	{
-		if (!_interpolationReady)
-		{
-			syncInterpolationState();
-			_interpolationReady = true;
-		}
-
-		_previousScroll.copyFrom(scroll);
-		_interpolationApplied = false;
-
 		// follow the target, if there is one
 		if (target != null)
 		{
@@ -36,64 +18,9 @@ class PsychCamera extends FlxCamera
 		updateFade(elapsed);
 
 		flashSprite.filters = filtersEnabled ? filters : null;
-		debugShaderFilters(elapsed);
 
 		updateFlashSpritePosition();
 		updateShake(elapsed);
-		_simulationScroll.copyFrom(scroll);
-	}
-
-	function debugShaderFilters(elapsed:Float):Void
-	{
-		#if sys
-		if (_lastDebugFilters != filters)
-		{
-			_debugFilterChanges++;
-			_lastDebugFilters = filters;
-			trace('[ShaderDebug][PsychCamera] filters ref changed, len=${filters == null ? 0 : filters.length}, enabled=$filtersEnabled');
-		}
-
-		if (elapsed > 0.05)
-			_debugSlowFrames++;
-
-		_debugTimer += elapsed;
-		if (_debugTimer >= 1)
-		{
-			if (_debugFilterChanges > 0 || _debugSlowFrames > 0 || (filters != null && filters.length > 0))
-				trace('[ShaderDebug][PsychCamera] 1s report: filters=${filters == null ? 0 : filters.length}, refChanges=$_debugFilterChanges, slowFrames=$_debugSlowFrames, elapsed=${Std.int(elapsed * 1000)}ms');
-
-			_debugTimer = 0;
-			_debugFilterChanges = 0;
-			_debugSlowFrames = 0;
-		}
-		#end
-	}
-
-	public function applyRenderInterpolation(alpha:Float):Void
-	{
-		if (!_interpolationReady || _interpolationApplied)
-			return;
-
-		var clampedAlpha:Float = FlxMath.bound(alpha, 0, 1);
-		scroll.x = _previousScroll.x + (_simulationScroll.x - _previousScroll.x) * clampedAlpha;
-		scroll.y = _previousScroll.y + (_simulationScroll.y - _previousScroll.y) * clampedAlpha;
-		_interpolationApplied = true;
-	}
-
-	public function restoreSimulationState():Void
-	{
-		if (!_interpolationApplied)
-			return;
-
-		scroll.copyFrom(_simulationScroll);
-		_interpolationApplied = false;
-	}
-
-	public function syncInterpolationState():Void
-	{
-		_previousScroll.copyFrom(scroll);
-		_simulationScroll.copyFrom(scroll);
-		_interpolationApplied = false;
 	}
 
 	public function updateFollowDelta(?elapsed:Float = 0):Void
@@ -183,11 +110,5 @@ class PsychCamera extends FlxCamera
 	override function set_followLerp(value:Float)
 	{
 		return followLerp = value;
-	}
-
-	override public function snapToTarget():Void
-	{
-		super.snapToTarget();
-		syncInterpolationState();
 	}
 }

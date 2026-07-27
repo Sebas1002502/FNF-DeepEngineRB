@@ -1,15 +1,7 @@
 package states;
 
-import InitState;
 import backend.WeekData;
 import backend.Mods;
-import psychlua.CustomState;
-#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
-import backend.ScriptableState;
-#end
-import states.MainMenuState;
-import states.FreeplayState;
-import states.TitleState;
 
 import flixel.FlxBasic;
 import flixel.graphics.FlxGraphic;
@@ -25,42 +17,37 @@ import lime.utils.Assets;
 
 class ModsMenuState extends MusicBeatState
 {
-	public var bg:FlxSprite;
-	public var icon:FlxSprite;
-	public var modName:Alphabet;
-	public var modDesc:FlxText;
-	public var modRestartText:FlxText;
-	public var modsList:ModsList = null;
+	var bg:FlxSprite;
+	var icon:FlxSprite;
+	var modName:Alphabet;
+	var modDesc:FlxText;
+	var modRestartText:FlxText;
+	var modsList:ModsList = null;
 
-	public var bgList:FlxSprite;
-	public var buttonReload:MenuButton;
+	var bgList:FlxSprite;
+	var buttonReload:MenuButton;
 	//var buttonModFolder:MenuButton;
-	public var buttonEnableAll:MenuButton;
-	public var buttonDisableAll:MenuButton;
-	public var buttons:Array<MenuButton> = [];
-	public var settingsButton:MenuButton;
+	var buttonEnableAll:MenuButton;
+	var buttonDisableAll:MenuButton;
+	var buttons:Array<MenuButton> = [];
+	var settingsButton:MenuButton;
+
+	var bgTitle:FlxSprite;
+	var bgDescription:FlxSprite;
+	var bgButtons:FlxSprite;
+
+	var modsGroup:FlxTypedGroup<ModItem>;
+	var curSelectedMod:Int = 0;
 	
-	public var buttonToggleMainY:Float = 0; // Posición Y principal para los botones toggle
-	public var buttonToggleSecondY:Float = 0; // Posición Y secundaria para el botón oculto
-	public var buttonToggleHiddenY:Float = 0; // Posición fuera de pantalla para ocultar con tween
-	public var toggleButtonsInitialized:Bool = false;
+	var hoveringOnMods:Bool = true;
+	var curSelectedButton:Int = 0; ///-1 = Enable/Disable All, -2 = Reload
+	var modNameInitialY:Float = 0;
 
-	public var bgTitle:FlxSprite;
-	public var bgDescription:FlxSprite;
-	public var bgButtons:FlxSprite;
+	var noModsSine:Float = 0;
+	var noModsTxt:FlxText;
 
-	public var modsGroup:FlxTypedGroup<ModItem>;
-	public var curSelectedMod:Int = 0;
-	
-	public var hoveringOnMods:Bool = true;
-	public var curSelectedButton:Int = 0; ///-1 = Enable/Disable All, -2 = Reload
-	public var modNameInitialY:Float = 0;
-
-	public var noModsSine:Float = 0;
-	public var noModsTxt:FlxText;
-
-	public var _lastControllerMode:Bool = false;
-	public var startMod:String = null;
+	var _lastControllerMode:Bool = false;
+	var startMod:String = null;
 	public function new(startMod:String = null)
 	{
 		this.startMod = startMod;
@@ -124,12 +111,8 @@ class ModsMenuState extends MusicBeatState
 		buttonReload = new MenuButton(buttonX, bgList.y + bgList.height + daY, buttonWidth, buttonHeight, Language.getPhrase('reload_button', 'RELOAD'), reload);
 		add(buttonReload);
 		
-		// Establecer posiciones para los botones toggle
-		buttonToggleMainY = buttonReload.y + buttonReload.bg.height + 20;
-		buttonToggleSecondY = buttonToggleMainY + buttonHeight + 20;
-		buttonToggleHiddenY = FlxG.height + buttonHeight + 40;
-		
-		/*buttonModFolder = new MenuButton(buttonX, buttonToggleMainY, buttonWidth, buttonHeight, "MODS FOLDER", function() {
+		var myY = buttonReload.y + buttonReload.bg.height + 20;
+		/*buttonModFolder = new MenuButton(buttonX, myY, buttonWidth, buttonHeight, "MODS FOLDER", function() {
 			var modFolder = Paths.mods();
 			if(!FileSystem.exists(modFolder))
 			{
@@ -140,27 +123,47 @@ class ModsMenuState extends MusicBeatState
 		});
 		add(buttonModFolder);*/
 
-		buttonEnableAll = new MenuButton(buttonX, buttonToggleMainY, buttonWidth, buttonHeight, Language.getPhrase('enable_all_button', 'ENABLE ALL'), function() {
+		buttonEnableAll = new MenuButton(buttonX, myY, buttonWidth, buttonHeight, Language.getPhrase('enable_all_button', 'ENABLE ALL'), function() {
 			buttonEnableAll.ignoreCheck = false;
-			setAllModsState(true);
+			for (mod in modsGroup.members)
+			{
+				if(modsList.disabled.contains(mod.folder))
+				{
+					modsList.disabled.remove(mod.folder);
+					modsList.enabled.push(mod.folder);
+					mod.icon.color = FlxColor.WHITE;
+					mod.text.color = FlxColor.WHITE;
+				}
+			}
 			updateModDisplayData();
 			checkToggleButtons();
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		});
 		buttonEnableAll.bg.color = FlxColor.GREEN;
 		buttonEnableAll.focusChangeCallback = function(focus:Bool) if(!focus) buttonEnableAll.bg.color = FlxColor.GREEN;
-		add(buttonEnableAll);
+		if(!controls.mobileC)
+			add(buttonEnableAll);
 
-		buttonDisableAll = new MenuButton(buttonX, buttonToggleSecondY, buttonWidth, buttonHeight, Language.getPhrase('disable_all_button', 'DISABLE ALL'), function() {
+		buttonDisableAll = new MenuButton(buttonX, myY, buttonWidth, buttonHeight, Language.getPhrase('disable_all_button', 'DISABLE ALL'), function() {
 			buttonDisableAll.ignoreCheck = false;
-			setAllModsState(false);
+			for (mod in modsGroup.members)
+			{
+				if(modsList.enabled.contains(mod.folder))
+				{
+					modsList.enabled.remove(mod.folder);
+					modsList.disabled.push(mod.folder);
+					mod.icon.color = 0xFFFF6666;
+					mod.text.color = FlxColor.GRAY;
+				}
+			}
 			updateModDisplayData();
 			checkToggleButtons();
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		});
 		buttonDisableAll.bg.color = 0xFFFF6666;
 		buttonDisableAll.focusChangeCallback = function(focus:Bool) if(!focus) buttonDisableAll.bg.color = 0xFFFF6666;
-		add(buttonDisableAll);
+		if(!controls.mobileC)
+			add(buttonDisableAll);
 		checkToggleButtons();
 
 		if(modsList.all.length < 1)
@@ -249,7 +252,7 @@ class ModsMenuState extends MusicBeatState
 			var curMod:ModItem = modsGroup.members[curSelectedMod];
 			if(curMod != null && curMod.settings != null && curMod.settings.length > 0)
 			{
-				openSubState(backend.ScriptableSubstate.tryCreate('ModSettingsSubState', new ModSettingsSubState(curMod.settings, curMod.folder, curMod.name)));
+				openSubState(new ModSettingsSubState(curMod.settings, curMod.folder, curMod.name));
 			}
 		}, 54, 54);
 
@@ -328,32 +331,17 @@ class ModsMenuState extends MusicBeatState
 
 	var holdTime:Float = 0;
 	var exiting:Bool = false;
-	function hasBootStateOverrides():Bool
-	{
-		#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
-		return ScriptableState.hasScript('TitleState')
-			|| ScriptableState.hasScript('FlashingState')
-			|| CustomState.hasScript('TitleState')
-			|| CustomState.hasScript('FlashingState');
-		#else
-		return false;
-		#end
-	}
-
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
-		
-		if((controls.BACK || (touchPad != null && touchPad.buttonB.justPressed)) && hoveringOnMods && !exiting)
+		if(controls.BACK && hoveringOnMods && !exiting)
 		{
 			exiting = true;
 			saveTxt();
-			var hasBootStates:Bool = hasBootStateOverrides();
 
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			// Only go through the boot flow when a mod actually overrides boot states.
-			if(hasBootStates)
+			if(waitingToRestart)
 			{
+				//MusicBeatState.switchState(new TitleState());
 				TitleState.initialized = false;
 				TitleState.closedState = false;
 				FlxG.sound.music.fadeOut(0.3);
@@ -362,39 +350,29 @@ class ModsMenuState extends MusicBeatState
 					FreeplayState.vocals.fadeOut(0.3);
 					FreeplayState.vocals = null;
 				}
-				FlxG.camera.fade(FlxColor.BLACK, 0.5, false, function()
-				{
-					FlxTransitionableState.skipNextTransIn = true;
-					FlxTransitionableState.skipNextTransOut = true;
-					MusicBeatState.switchState(backend.ScriptableState.tryCreate('InitialState', new InitialState()));
-				}, false);
+				FlxG.camera.fade(FlxColor.BLACK, 0.5, false, FlxG.resetGame, false);
 			}
-			else
-			{
-				if(waitingToRestart) Language.reloadPhrases();
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
-			}
+			else MusicBeatState.switchState(new MainMenuState());
 
 			persistentUpdate = false;
 			FlxG.autoPause = ClientPrefs.data.autoPause;
-			Cursor.hide();
+			FlxG.mouse.visible = false;
 			return;
 		}
 
 		if(Math.abs(FlxG.mouse.deltaX) > 10 || Math.abs(FlxG.mouse.deltaY) > 10)
 		{
 			controls.controllerMode = false;
-			if(!FlxG.mouse.visible) Cursor.show();
+			if(!FlxG.mouse.visible) FlxG.mouse.visible = true;
 		}
 		
 		if(controls.controllerMode != _lastControllerMode)
 		{
-			if(controls.controllerMode) Cursor.hide();
-			else Cursor.show();
+			if(controls.controllerMode) FlxG.mouse.visible = false;
+			_lastControllerMode = controls.controllerMode;
 		}
-		
-		if(controls.UI_DOWN_R || controls.UI_UP_R || (touchPad != null && (touchPad.buttonDown.justReleased || touchPad.buttonUp.justReleased))) 
-			holdTime = 0;
+
+		if(controls.UI_DOWN_R || controls.UI_UP_R) holdTime = 0;
 
 		if(modsList.all.length > 0)
 		{
@@ -434,9 +412,9 @@ class ModsMenuState extends MusicBeatState
 				if(hoveringOnMods)
 				{
 					var shiftMult:Int = (FlxG.keys.pressed.SHIFT || FlxG.gamepads.anyPressed(LEFT_SHOULDER) || FlxG.gamepads.anyPressed(RIGHT_SHOULDER)) ? 4 : 1;
-					if(controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed))
+					if(controls.UI_DOWN_P)
 						changeSelectedMod(shiftMult);
-					else if(controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
+					else if(controls.UI_UP_P)
 						changeSelectedMod(-shiftMult);
 					else if(FlxG.mouse.wheel != 0)
 						changeSelectedMod(-FlxG.mouse.wheel * shiftMult, true);
@@ -445,18 +423,16 @@ class ModsMenuState extends MusicBeatState
 					{
 						if(FlxG.keys.justPressed.END || FlxG.gamepads.anyJustPressed(RIGHT_TRIGGER)) curSelectedMod = modsList.all.length-1;
 						else curSelectedMod = 0;
-					changeSelectedMod();
-				}
-				else if(controls.UI_UP || controls.UI_DOWN || (touchPad != null && (touchPad.buttonUp.pressed || touchPad.buttonDown.pressed)))
-				{
-					var lastHoldTime:Float = holdTime;
-					holdTime += elapsed;
-					if(holdTime > 0.5 && Math.floor(lastHoldTime * 8) != Math.floor(holdTime * 8))
-					{
-						var isUp = controls.UI_UP || (touchPad != null && touchPad.buttonUp.pressed);
-						changeSelectedMod(shiftMult * (isUp ? -1 : 1));
+						changeSelectedMod();
 					}
-				}					else if(FlxG.mouse.pressed && !controls.mobileC && !gottaClickAgain)
+					else if(controls.UI_UP || controls.UI_DOWN)
+					{
+						var lastHoldTime:Float = holdTime;
+						holdTime += elapsed;
+						if(holdTime > 0.5 && Math.floor(lastHoldTime * 8) != Math.floor(holdTime * 8)) changeSelectedMod(shiftMult * (controls.UI_UP ? -1 : 1));
+					}
+
+					else if(FlxG.mouse.pressed && !controls.mobileC && !gottaClickAgain)
 					{
 						var curMod:ModItem = modsGroup.members[curSelectedMod];
 						if(curMod != null)
@@ -517,7 +493,7 @@ class ModsMenuState extends MusicBeatState
 			{
 				if(hoveringOnMods)
 				{
-					if(controls.UI_RIGHT_P || controls.ACCEPT || (touchPad != null && touchPad.buttonB.justPressed))
+					if(controls.UI_RIGHT_P)
 					{
 						hoveringOnMods = false;
 						var button = getButton();
@@ -528,7 +504,7 @@ class ModsMenuState extends MusicBeatState
 				}
 				else 
 				{
-					if(controls.BACK || (touchPad != null && touchPad.buttonB.pressed && hoveringOnMods == false))
+					if(controls.BACK)
 					{
 						hoveringOnMods = true;
 						var button = getButton();
@@ -542,7 +518,7 @@ class ModsMenuState extends MusicBeatState
 					}
 					else if(curSelectedButton < 0)
 					{
-						if(controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
+						if(controls.UI_UP_P)
 						{
 							switch(curSelectedButton)
 							{
@@ -556,7 +532,7 @@ class ModsMenuState extends MusicBeatState
 									changeSelectedButton(-1);
 							}
 						}
-						else if(controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed))
+						else if(controls.UI_DOWN_P)
 						{
 							switch(curSelectedButton)
 							{
@@ -598,14 +574,17 @@ class ModsMenuState extends MusicBeatState
 				@:privateAccess
 				Mods.updateModList();
 				modsList = Mods.parseList();
-			if(modsList.all.length > 0)
-			{
-				trace('mod(s) found! reloading');
-				reload();
+				if(modsList.all.length > 0)
+				{
+					trace('mod(s) found! reloading');
+					reload();
+				}
 			}
 		}
+		super.update(elapsed);
 	}
-}	function changeSelectedButton(add:Int = 0)
+
+	function changeSelectedButton(add:Int = 0)
 	{
 		var max = buttons.length - 1;
 		
@@ -807,81 +786,8 @@ class ModsMenuState extends MusicBeatState
 
 	function checkToggleButtons()
 	{
-		var hasDisabledMods = modsList.disabled.length > 0;
-		var hasEnabledMods = modsList.enabled.length > 0;
-
-		var showEnableAll:Bool = hasDisabledMods;
-		var showDisableAll:Bool = !showEnableAll && hasEnabledMods;
-
-		buttonEnableAll.visible = true;
-		buttonDisableAll.visible = true;
-		buttonEnableAll.alpha = 1;
-		buttonDisableAll.alpha = 1;
-
-		buttonEnableAll.enabled = buttonEnableAll.active = showEnableAll;
-		buttonDisableAll.enabled = buttonDisableAll.active = showDisableAll;
-
-		if (!buttonEnableAll.enabled)
-		{
-			buttonEnableAll.ignoreCheck = false;
-			buttonEnableAll.onFocus = false;
-		}
-		if (!buttonDisableAll.enabled)
-		{
-			buttonDisableAll.ignoreCheck = false;
-			buttonDisableAll.onFocus = false;
-		}
-
-		animateToggleButtons(showEnableAll, !toggleButtonsInitialized);
-		toggleButtonsInitialized = true;
-	}
-
-	function animateToggleButtons(showEnableAll:Bool, instant:Bool = false):Void
-	{
-		var duration:Float = instant ? 0 : 0.2;
-
-		var enableTargetY:Float = showEnableAll ? buttonToggleMainY : buttonToggleHiddenY;
-		var disableTargetY:Float = showEnableAll ? buttonToggleHiddenY : buttonToggleMainY;
-
-		FlxTween.cancelTweensOf(buttonEnableAll);
-		FlxTween.cancelTweensOf(buttonDisableAll);
-
-		if (instant)
-		{
-			buttonEnableAll.y = enableTargetY;
-			buttonDisableAll.y = disableTargetY;
-		}
-		else
-		{
-			FlxTween.tween(buttonEnableAll, {y: enableTargetY}, duration, {ease: FlxEase.quadOut});
-			FlxTween.tween(buttonDisableAll, {y: disableTargetY}, duration, {ease: FlxEase.quadOut});
-		}
-	}
-
-	function setAllModsState(enableAll:Bool):Void
-	{
-		modsList.enabled = [];
-		modsList.disabled = [];
-
-		for (mod in modsGroup.members)
-		{
-			if (mod == null || mod.folder == null || mod.folder.trim().length < 1) continue;
-			if (enableAll) modsList.enabled.push(mod.folder);
-			else modsList.disabled.push(mod.folder);
-		}
-
-		syncAllModVisualStates();
-	}
-
-	function syncAllModVisualStates():Void
-	{
-		for (mod in modsGroup.members)
-		{
-			if (mod == null) continue;
-			var isDisabled:Bool = modsList.disabled.contains(mod.folder);
-			mod.icon.color = isDisabled ? 0xFFFF6666 : FlxColor.WHITE;
-			mod.text.color = isDisabled ? FlxColor.GRAY : FlxColor.WHITE;
-		}
+		buttonEnableAll.visible = buttonEnableAll.enabled = buttonEnableAll.active = modsList.disabled.length > 0;
+		buttonDisableAll.visible = buttonDisableAll.enabled = buttonDisableAll.active = !buttonEnableAll.visible;
 	}
 
 	function reload()
@@ -891,7 +797,7 @@ class ModsMenuState extends MusicBeatState
 		FlxTransitionableState.skipNextTransIn = true;
 		FlxTransitionableState.skipNextTransOut = true;
 		var curMod:ModItem = modsGroup.members[curSelectedMod];
-		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(curMod != null ? curMod.folder : null)));
+		MusicBeatState.switchState(new ModsMenuState(curMod != null ? curMod.folder : null));
 	}
 	
 	function saveTxt()
@@ -908,22 +814,8 @@ class ModsMenuState extends MusicBeatState
 			fileStr += '$mod|$on';
 		}
 
-		// Use StorageUtil.saveContent with proper error handling and no popup alert
-		#if android
-		try {
-			File.saveContent(StorageUtil.getModsListPath(), fileStr);
-		} catch (e:Dynamic) {
-			trace('[ModsMenuState] Failed to save modsList.txt: $e');
-		}
-		#else
-		var path:String = Sys.getCwd() + 'modsList.txt';
-		try {
-			File.saveContent(path, fileStr);
-		} catch (e:Dynamic) {
-			trace('[ModsMenuState] Failed to save modsList.txt: $e');
-		}
-		#end
-		
+		var path:String = #if android StorageUtil.getExternalStorageDirectory() + #else Sys.getCwd() + #end 'modsList.txt';
+		File.saveContent(path, fileStr);
 		Mods.parseList();
 		Mods.loadTopMod();
 	}

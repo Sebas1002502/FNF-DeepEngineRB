@@ -27,24 +27,6 @@ class LuaUtils
 	public static final Function_StopHScript:String = "##PSYCHLUA_FUNCTIONSTOPHSCRIPT";
 	public static final Function_StopAll:String = "##PSYCHLUA_FUNCTIONSTOPALL";
 
-	public static function isStop(ret:Dynamic):Bool
-	{
-		return ret == Function_Stop
-			|| ret == Function_StopLua
-			|| ret == Function_StopHScript
-			|| ret == Function_StopAll
-			|| ret == 1;
-	}
-
-	public static function getCurrentContext():Null<LuaHostContext>
-	{
-		#if LUA_ALLOWED
-		if (FunkinLua.lastCalledScript != null)
-			return FunkinLua.lastCalledScript.context;
-		#end
-		return null;
-	}
-
 	public static function getLuaTween(options:Dynamic)
 	{
 		return (options != null) ? {
@@ -186,11 +168,8 @@ class LuaUtils
 		else
 		{
 			FlxG.save.data.modSettings.remove(modName);
-			#if LUA_ALLOWED
-			FunkinLua.luaTrace('getModSetting: $path could not be found!', true, false, FlxColor.RED);
-			#elseif HSCRIPT_ALLOWED
-			if (PlayState.instance != null) PlayState.instance.addTextToDebug('getModSetting: $path could not be found!', FlxColor.RED);
-			else FlxG.log.warn('getModSetting: $path could not be found!');
+			#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+			PlayState.instance.addTextToDebug('getModSetting: $path could not be found!', FlxColor.RED);
 			#else
 			FlxG.log.warn('getModSetting: $path could not be found!');
 			#end
@@ -198,11 +177,8 @@ class LuaUtils
 		}
 
 		if(settings.exists(saveTag)) return settings.get(saveTag);
-		#if LUA_ALLOWED
-		FunkinLua.luaTrace('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', true, false, FlxColor.RED);
-		#elseif HSCRIPT_ALLOWED
-		if (PlayState.instance != null) PlayState.instance.addTextToDebug('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', FlxColor.RED);
-		else FlxG.log.warn('getModSetting: "$saveTag" could not be found inside $modName\'s settings!');
+		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+		PlayState.instance.addTextToDebug('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', FlxColor.RED);
 		#else
 		FlxG.log.warn('getModSetting: "$saveTag" could not be found inside $modName\'s settings!');
 		#end
@@ -268,17 +244,11 @@ class LuaUtils
 		switch(objectName)
 		{
 			case 'this' | 'instance' | 'game':
-				return getTargetInstance();
+				return PlayState.instance;
 			
 			default:
 				var obj:Dynamic = MusicBeatState.getVariables().get(objectName);
-				if(obj == null)
-				{
-					var ctx = getCurrentContext();
-					if(ctx != null && ctx.variables != null && ctx.variables.exists(objectName))
-						obj = ctx.variables.get(objectName);
-				}
-				if(obj == null) obj = getVarInArray(getTargetInstance(), objectName, allowMaps);
+				if(obj == null) obj = getVarInArray(MusicBeatState.getState(), objectName, allowMaps);
 				return obj;
 		}
 	}
@@ -297,8 +267,6 @@ class LuaUtils
 	
 	public static function getTargetInstance()
 	{
-		var ctx = getCurrentContext();
-		if(ctx != null && ctx.host != null) return ctx.host;
 		if(PlayState.instance != null) return PlayState.instance.isDead ? GameOverSubstate.instance : PlayState.instance;
 		return MusicBeatState.getState();
 	}
@@ -480,60 +448,36 @@ class LuaUtils
 
 	public static function getTweenEaseByString(?ease:String = '') {
 		switch(ease.toLowerCase().trim()) {
-			case 'accelerate': return FlxEase.accelerate;
 			case 'backin': return FlxEase.backIn;
 			case 'backinout': return FlxEase.backInOut;
 			case 'backout': return FlxEase.backOut;
-			case 'backoutin': return FlxEase.backOutIn;
-			case 'bell': return FlxEase.bell;
-			case 'bounce': return FlxEase.bounce;
 			case 'bouncein': return FlxEase.bounceIn;
 			case 'bounceinout': return FlxEase.bounceInOut;
 			case 'bounceout': return FlxEase.bounceOut;
-			case 'bounceoutin': return FlxEase.bounceOutIn;
 			case 'circin': return FlxEase.circIn;
 			case 'circinout': return FlxEase.circInOut;
 			case 'circout': return FlxEase.circOut;
-			case 'circoutin': return FlxEase.circOutIn;
 			case 'cubein': return FlxEase.cubeIn;
 			case 'cubeinout': return FlxEase.cubeInOut;
 			case 'cubeout': return FlxEase.cubeOut;
-			case 'cubicoutin': return FlxEase.cubicOutIn;
-			case 'decelerate': return FlxEase.decelerate;
 			case 'elasticin': return FlxEase.elasticIn;
 			case 'elasticinout': return FlxEase.elasticInOut;
 			case 'elasticout': return FlxEase.elasticOut;
-			case 'elasticoutin': return FlxEase.elasticOutIn;
-			case 'emphasizedaccelerate': return FlxEase.emphasizedAccelerate;
-			case 'emphasizeddecelerate': return FlxEase.emphasizedDecelerate;
 			case 'expoin': return FlxEase.expoIn;
 			case 'expoinout': return FlxEase.expoInOut;
 			case 'expoout': return FlxEase.expoOut;
-			case 'expooutin': return FlxEase.expoOutIn;
-			case 'instant': return FlxEase.instant;
-			case 'inverse': return FlxEase.inverse;
-			case 'pop': return FlxEase.pop;
-			case 'tap': return FlxEase.tap;
-			case 'pulse': return FlxEase.pulse;
-			case 'spike': return FlxEase.spike;
-			case 'standard': return FlxEase.standard;
-			case 'tri': return FlxEase.tri;
 			case 'quadin': return FlxEase.quadIn;
 			case 'quadinout': return FlxEase.quadInOut;
 			case 'quadout': return FlxEase.quadOut;
-			case 'quadoutin': return FlxEase.quadOutIn;
 			case 'quartin': return FlxEase.quartIn;
 			case 'quartinout': return FlxEase.quartInOut;
 			case 'quartout': return FlxEase.quartOut;
-			case 'quartoutin': return FlxEase.quartOutIn;
 			case 'quintin': return FlxEase.quintIn;
 			case 'quintinout': return FlxEase.quintInOut;
 			case 'quintout': return FlxEase.quintOut;
-			case 'quintoutin': return FlxEase.quintOutIn;
 			case 'sinein': return FlxEase.sineIn;
 			case 'sineinout': return FlxEase.sineInOut;
 			case 'sineout': return FlxEase.sineOut;
-			case 'sineoutin': return FlxEase.sineOutIn;
 			case 'smoothstepin': return FlxEase.smoothStepIn;
 			case 'smoothstepinout': return FlxEase.smoothStepInOut;
 			case 'smoothstepout': return FlxEase.smoothStepOut;
@@ -579,28 +523,13 @@ class LuaUtils
 	}
 
 	public static function cameraFromString(cam:String):FlxCamera {
-		var lowerCam:String = cam == null ? '' : cam.toLowerCase();
-		if(PlayState.instance != null) {
-			switch(lowerCam) {
-				case 'camgame' | 'game': return PlayState.instance.camGame;
-				case 'camhud' | 'hud': return PlayState.instance.camHUD;
-				case 'camother' | 'other': return PlayState.instance.camOther;
-			}
+		switch(cam.toLowerCase()) {
+			case 'camgame' | 'game': return PlayState.instance.camGame;
+			case 'camhud' | 'hud': return PlayState.instance.camHUD;
+			case 'camother' | 'other': return PlayState.instance.camOther;
 		}
 		var camera:FlxCamera = MusicBeatState.getVariables().get(cam);
-		if (camera == null || !Std.isOfType(camera, FlxCamera))
-		{
-			var host = getTargetInstance();
-			var fieldName:String = switch(lowerCam) {
-				case 'camgame' | 'game': 'camGame';
-				case 'camhud' | 'hud': 'camHUD';
-				case 'camother' | 'other': 'camOther';
-				default: cam;
-			}
-			var reflected:Dynamic = (host != null && fieldName != null && fieldName.length > 0) ? Reflect.getProperty(host, fieldName) : null;
-			if(reflected != null && Std.isOfType(reflected, FlxCamera)) camera = reflected;
-		}
-		if (camera == null || !Std.isOfType(camera, FlxCamera)) camera = FlxG.camera;
+		if (camera == null || !Std.isOfType(camera, FlxCamera)) camera = PlayState.instance.camGame;
 		return camera;
 	}
 }

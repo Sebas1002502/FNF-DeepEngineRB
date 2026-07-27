@@ -1,8 +1,8 @@
 package options;
 
+import backend.StageData;
 import objects.Character;
 import objects.Bar;
-import objects.KeyViewer;
 import flixel.addons.display.shapes.FlxShapeCircle;
 
 import states.stages.StageWeek1 as BackgroundStage;
@@ -21,7 +21,6 @@ class NoteOffsetState extends MusicBeatState
 	var rating:FlxSprite;
 	var comboNums:FlxSpriteGroup;
 	var dumbTexts:FlxTypedGroup<FlxText>;
-	var keyViewer:KeyViewer;
 
 	var barPercent:Float = 0;
 	var delayMin:Int = -500;
@@ -78,7 +77,7 @@ class NoteOffsetState extends MusicBeatState
 		coolText.screenCenter();
 		coolText.x = FlxG.width * 0.35;
 
-		rating = new FlxSprite().loadGraphic(Paths.image('flawless'));
+		rating = new FlxSprite().loadGraphic(Paths.image('sick'));
 		rating.cameras = [camHUD];
 		rating.antialiasing = ClientPrefs.data.antialiasing;
 		rating.setGraphicSize(Std.int(rating.width * 0.7));
@@ -112,12 +111,6 @@ class NoteOffsetState extends MusicBeatState
 		dumbTexts.cameras = [camHUD];
 		add(dumbTexts);
 		createTexts();
-
-		// KeyViewer stuff
-		keyViewer = new KeyViewer(PlayState.STRUM_X_MIDDLESCROLL, FlxG.height - 150);
-		keyViewer.cameras = [camHUD];
-		keyViewer.visible = false;
-		add(keyViewer);
 
 		repositionCombo();
 
@@ -181,23 +174,21 @@ class NoteOffsetState extends MusicBeatState
 	}
 
 	var holdTime:Float = 0;
-	var currentMode:Int = 0; // 0 = Note Delay, 1 = Combo Offset, 2 = KeyViewer Offset
-	var holdingObjectType:Null<Int> = null; // 0 = rating, 1 = combo, 2 = keyViewer
+	var onComboMenu:Bool = true;
+	var holdingObjectType:Null<Bool> = null;
 
 	var startMousePos:FlxPoint = new FlxPoint();
 	var startComboOffset:FlxPoint = new FlxPoint();
 
 	override public function update(elapsed:Float)
 	{
-		super.update(elapsed);
-		
 		var addNum:Int = 1;
 		if(FlxG.keys.pressed.SHIFT || FlxG.gamepads.anyPressed(LEFT_SHOULDER))
 		{
-			if(currentMode == 0) // Note Delay mode
-				addNum = 3;
-			else // Combo/KeyViewer modes
+			if(onComboMenu)
 				addNum = 10;
+			else
+				addNum = 3;
 		}
 
 		if(FlxG.gamepads.anyJustPressed(ANY)) controls.controllerMode = true;
@@ -220,7 +211,7 @@ class NoteOffsetState extends MusicBeatState
 			_lastControllerMode = controls.controllerMode;
 		}
 
-		if(currentMode == 1 || currentMode == 2) // Combo Offset or KeyViewer Offset
+		if(onComboMenu)
 		{
 			if(FlxG.keys.justPressed.ANY || FlxG.gamepads.anyJustPressed(ANY))
 			{
@@ -263,44 +254,25 @@ class NoteOffsetState extends MusicBeatState
 							switch(i)
 							{
 								case 0:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[0] -= addNum;
-									else // KeyViewer mode
-										ClientPrefs.data.keyViewerOffset[0] -= addNum;
+									ClientPrefs.data.comboOffset[0] -= addNum;
 								case 1:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[0] += addNum;
-									else // KeyViewer mode
-										ClientPrefs.data.keyViewerOffset[0] += addNum;
+									ClientPrefs.data.comboOffset[0] += addNum;
 								case 2:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[1] += addNum;
-									else // KeyViewer mode
-										ClientPrefs.data.keyViewerOffset[1] -= addNum;
+									ClientPrefs.data.comboOffset[1] += addNum;
 								case 3:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[1] -= addNum;
-									else // KeyViewer mode
-										ClientPrefs.data.keyViewerOffset[1] += addNum;
+									ClientPrefs.data.comboOffset[1] -= addNum;
 								case 4:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[2] -= addNum;
+									ClientPrefs.data.comboOffset[2] -= addNum;
 								case 5:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[2] += addNum;
+									ClientPrefs.data.comboOffset[2] += addNum;
 								case 6:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[3] += addNum;
+									ClientPrefs.data.comboOffset[3] += addNum;
 								case 7:
-									if(currentMode == 1) // Combo mode
-										ClientPrefs.data.comboOffset[3] -= addNum;
+									ClientPrefs.data.comboOffset[3] -= addNum;
 							}
 						}
 					}
-					if(currentMode == 1)
-						repositionCombo();
-					else if(currentMode == 2)
-						repositionKeyViewer();
+					repositionCombo();
 				}
 			}
 			
@@ -335,28 +307,18 @@ class NoteOffsetState extends MusicBeatState
 				else
 					controllerPointer.getScreenPosition(startMousePos, camHUD);
 
-				// Check KeyViewer first (mode 2)
-				if (currentMode == 2 && startMousePos.x - keyViewer.x >= 0 && startMousePos.x - keyViewer.x <= keyViewer.width &&
-					startMousePos.y - keyViewer.y >= 0 && startMousePos.y - keyViewer.y <= keyViewer.height)
-				{
-					holdingObjectType = 2;
-					startComboOffset.x = ClientPrefs.data.keyViewerOffset[0];
-					startComboOffset.y = ClientPrefs.data.keyViewerOffset[1];
-				}
-				// Check combo nums (mode 1)
-				else if (currentMode == 1 && startMousePos.x - comboNums.x >= 0 && startMousePos.x - comboNums.x <= comboNums.width &&
+				if (startMousePos.x - comboNums.x >= 0 && startMousePos.x - comboNums.x <= comboNums.width &&
 					startMousePos.y - comboNums.y >= 0 && startMousePos.y - comboNums.y <= comboNums.height)
 				{
-					holdingObjectType = 1;
+					holdingObjectType = true;
 					startComboOffset.x = ClientPrefs.data.comboOffset[2];
 					startComboOffset.y = ClientPrefs.data.comboOffset[3];
 					//trace('yo bro');
 				}
-				// Check rating (mode 1)
-				else if (currentMode == 1 && startMousePos.x - rating.x >= 0 && startMousePos.x - rating.x <= rating.width &&
+				else if (startMousePos.x - rating.x >= 0 && startMousePos.x - rating.x <= rating.width &&
 						 startMousePos.y - rating.y >= 0 && startMousePos.y - rating.y <= rating.height)
 				{
-					holdingObjectType = 0;
+					holdingObjectType = false;
 					startComboOffset.x = ClientPrefs.data.comboOffset[0];
 					startComboOffset.y = ClientPrefs.data.comboOffset[1];
 					//trace('heya');
@@ -377,49 +339,31 @@ class NoteOffsetState extends MusicBeatState
 					else
 						mousePos = controllerPointer.getScreenPosition(camHUD);
 
-					if(holdingObjectType == 2) // KeyViewer
-					{
-						ClientPrefs.data.keyViewerOffset[0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
-						ClientPrefs.data.keyViewerOffset[1] = Math.round((mousePos.y - startMousePos.y) + startComboOffset.y);
-						repositionKeyViewer();
-					}
-					else // Combo (0 = rating, 1 = combo nums)
-					{
-						var addNum:Int = holdingObjectType == 1 ? 2 : 0;
-						ClientPrefs.data.comboOffset[addNum + 0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
-						ClientPrefs.data.comboOffset[addNum + 1] = -Math.round((mousePos.y - startMousePos.y) - startComboOffset.y);
-						repositionCombo();
-					}
+					var addNum:Int = holdingObjectType ? 2 : 0;
+					ClientPrefs.data.comboOffset[addNum + 0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
+					ClientPrefs.data.comboOffset[addNum + 1] = -Math.round((mousePos.y - startMousePos.y) - startComboOffset.y);
+					repositionCombo();
 				}
 			}
 
-			if(controls.RESET || (touchPad != null && touchPad.buttonC.justPressed))
+			if(controls.RESET || touchPad.buttonC.justPressed)
 			{
-				if(currentMode == 1) // Combo mode
+				for (i in 0...ClientPrefs.data.comboOffset.length)
 				{
-					for (i in 0...ClientPrefs.data.comboOffset.length)
-					{
-						ClientPrefs.data.comboOffset[i] = 0;
-					}
-					repositionCombo();
+					ClientPrefs.data.comboOffset[i] = 0;
 				}
-				else if(currentMode == 2) // KeyViewer mode
-				{
-					ClientPrefs.data.keyViewerOffset[0] = 0;
-					ClientPrefs.data.keyViewerOffset[1] = 0;
-					repositionKeyViewer();
-				}
+				repositionCombo();
 			}
 		}
 		else
 		{
-			if(controls.UI_LEFT_P || (touchPad != null && touchPad.buttonLeft.justPressed))
+			if(controls.UI_LEFT_P)
 			{
 				holdTime = 0;
 				barPercent = Math.max(delayMin, Math.min(ClientPrefs.data.noteOffset - 1, delayMax));
 				updateNoteDelay();
 			}
-			else if(controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed))
+			else if(controls.UI_RIGHT_P)
 			{
 				holdTime = 0;
 				barPercent = Math.max(delayMin, Math.min(ClientPrefs.data.noteOffset + 1, delayMax));
@@ -427,10 +371,10 @@ class NoteOffsetState extends MusicBeatState
 			}
 
 			var mult:Int = 1;
-			if(controls.UI_LEFT || controls.UI_RIGHT || (touchPad != null && (touchPad.buttonLeft.pressed || touchPad.buttonRight.pressed)))
+			if(controls.UI_LEFT || controls.UI_RIGHT)
 			{
 				holdTime += elapsed;
-				if(controls.UI_LEFT || (touchPad != null && touchPad.buttonLeft.pressed)) mult = -1;
+				if(controls.UI_LEFT) mult = -1;
 			}
 
 			if(holdTime > 0.5)
@@ -440,7 +384,7 @@ class NoteOffsetState extends MusicBeatState
 				updateNoteDelay();
 			}
 
-			if(controls.RESET || (touchPad != null && touchPad.buttonC.justPressed))
+			if(controls.RESET || touchPad.buttonC.justPressed)
 			{
 				holdTime = 0;
 				barPercent = 0;
@@ -449,20 +393,19 @@ class NoteOffsetState extends MusicBeatState
 		}
 
 		if((!controls.controllerMode && controls.ACCEPT) ||
-		(controls.controllerMode && FlxG.gamepads.anyJustPressed(START)) ||
-		(touchPad != null && touchPad.buttonA.justPressed))
+		(controls.controllerMode && FlxG.gamepads.anyJustPressed(START)))
 		{
-			currentMode = (currentMode + 1) % 3; // Cycle through 0, 1, 2
+			onComboMenu = !onComboMenu;
 			updateMode();
 		}
 
-		if(controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
+		if(controls.BACK)
 		{
 			if(zoomTween != null) zoomTween.cancel();
 			if(beatTween != null) beatTween.cancel();
 
 			persistentUpdate = false;
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('OptionsState', new options.OptionsState()));
+			MusicBeatState.switchState(new options.OptionsState());
 			if(OptionsState.onPlayState)
 			{
 				if(ClientPrefs.data.pauseMusic != 'None')
@@ -471,17 +414,20 @@ class NoteOffsetState extends MusicBeatState
 					FlxG.sound.music.volume = 0;
 			}
 			else FlxG.sound.playMusic(Paths.music('freakyMenu'));
-		FlxG.mouse.visible = false;
+			FlxG.mouse.visible = false;
+		}
+
+		Conductor.songPosition = FlxG.sound.music.time;
+		super.update(elapsed);
 	}
 
-	Conductor.songPosition = FlxG.sound.music.time;
-}
+	var zoomTween:FlxTween;
+	var lastBeatHit:Int = -1;
+	override public function beatHit()
+	{
+		super.beatHit();
 
-var zoomTween:FlxTween;
-var lastBeatHit:Int = -1;
-override public function beatHit()
-{
-	super.beatHit();		if(lastBeatHit == curBeat)
+		if(lastBeatHit == curBeat)
 		{
 			return;
 		}
@@ -551,25 +497,12 @@ override public function beatHit()
 	{
 		for (i in 0...dumbTexts.length)
 		{
-			if(currentMode == 1) // Combo mode
+			switch(i)
 			{
-				switch(i)
-				{
-					case 0: dumbTexts.members[i].text = Language.getPhrase('combo_rating_offset', 'Rating Offset:');
-					case 1: dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[0] + ', ' + ClientPrefs.data.comboOffset[1] + ']';
-					case 2: dumbTexts.members[i].text = Language.getPhrase('combo_numbers_offset', 'Numbers Offset:');
-					case 3: dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[2] + ', ' + ClientPrefs.data.comboOffset[3] + ']';
-				}
-			}
-			else if(currentMode == 2) // KeyViewer mode
-			{
-				switch(i)
-				{
-					case 0: dumbTexts.members[i].text = Language.getPhrase('keyviewer_position_offset', 'KeyViewer Position:');
-					case 1: dumbTexts.members[i].text = '[' + ClientPrefs.data.keyViewerOffset[0] + ', ' + ClientPrefs.data.keyViewerOffset[1] + ']';
-					case 2: dumbTexts.members[i].text = Language.getPhrase('keyviewer_color_setting', 'KeyViewer Color:');
-					case 3: dumbTexts.members[i].text = ClientPrefs.data.keyViewerColor;
-				}
+				case 0: dumbTexts.members[i].text = Language.getPhrase('combo_rating_offset', 'Rating Offset:');
+				case 1: dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[0] + ', ' + ClientPrefs.data.comboOffset[1] + ']';
+				case 2: dumbTexts.members[i].text = Language.getPhrase('combo_numbers_offset', 'Numbers Offset:');
+				case 3: dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[2] + ', ' + ClientPrefs.data.comboOffset[3] + ']';
 			}
 		}
 	}
@@ -582,23 +515,17 @@ override public function beatHit()
 
 	function updateMode()
 	{
-		// Note Delay mode (0)
-		timeBar.visible = (currentMode == 0);
-		timeTxt.visible = (currentMode == 0);
-		beatText.visible = (currentMode == 0);
-
-		// Combo Offset mode (1)
-		rating.visible = (currentMode == 1);
-		comboNums.visible = (currentMode == 1);
-		dumbTexts.visible = (currentMode == 1);
+		rating.visible = onComboMenu;
+		comboNums.visible = onComboMenu;
+		dumbTexts.visible = onComboMenu;
 		
-		// KeyViewer Offset mode (2)
-		keyViewer.visible = (currentMode == 2);
-		if(currentMode == 2) dumbTexts.visible = true; // Mostrar textos también en modo KeyViewer
+		timeBar.visible = !onComboMenu;
+		timeTxt.visible = !onComboMenu;
+		beatText.visible = !onComboMenu;
 
 		controllerPointer.visible = false;
 		FlxG.mouse.visible = false;
-		if(currentMode == 1 || currentMode == 2) // Combo or KeyViewer mode
+		if(onComboMenu)
 		{
 			FlxG.mouse.visible = !controls.controllerMode;
 			controllerPointer.visible = controls.controllerMode;
@@ -606,42 +533,23 @@ override public function beatHit()
 
 		removeTouchPad();
 
-		var str:String = "";
+		var str:String;
 		var str2:String;
 		final accept:String = (controls.mobileC) ? "A" : (!controls.controllerMode) ? "ACCEPT" : "Start";
-		
-		switch(currentMode)
+		if(onComboMenu)
 		{
-			case 0: // Note Delay
-				str = Language.getPhrase('note_delay', 'Note/Beat Delay');
-				addTouchPad('LEFT_RIGHT', 'A_B_C');
-				addTouchPadCamera();
-			case 1: // Combo Offset
-				str = Language.getPhrase('combo_offset', 'Combo Offset');
-				addTouchPad('NONE', 'A_B_C');
-				addTouchPadCamera();
-				reloadTexts(); // Actualizar textos para combo
-			case 2: // KeyViewer Offset
-				str = Language.getPhrase('keyviewer_offset', 'KeyViewer Offset');
-				addTouchPad('NONE', 'A_B_C');
-				addTouchPadCamera();
-				reloadTexts(); // Actualizar textos para keyviewer
-			default:
-				str = Language.getPhrase('note_delay', 'Note/Beat Delay');
-				addTouchPad('LEFT_RIGHT', 'A_B_C');
-				addTouchPadCamera();
+			str = Language.getPhrase('combo_offset', 'Combo Offset');
+			addTouchPad('NONE', 'A_B_C');
+			addTouchPadCamera();
+		} else {
+			str = Language.getPhrase('note_delay', 'Note/Beat Delay');
+			addTouchPad('LEFT_RIGHT', 'A_B_C');
+			addTouchPadCamera();
 		}
 
 		str2 = Language.getPhrase('switch_on_button', '(Press {1} to Switch)', [accept]);
 
 		changeModeText.text = '< ${str.toUpperCase()} ${str2.toUpperCase()} >';
-	}
-
-	function repositionKeyViewer()
-	{
-		keyViewer.centerOnScreen();
-		reloadTexts(); // Actualizar los textos con las nuevas posiciones
-		ClientPrefs.saveSettings();
 	}
 
 	override function destroy(){

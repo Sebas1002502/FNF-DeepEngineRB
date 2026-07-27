@@ -46,28 +46,18 @@ body:
   - type: dropdown
     id: psychver
     attributes:
-      label: "Which plus engine version you're on?"
+      label: "Which psych engine version you're on?"
       options:
         - "DevBuild"
-        - "1.2"
-        - "1.1"
-        - "1.0.5"
-    validations:
-      required: true
-
-  - type: dropdown
-    id: modver
-    attributes:
-      label: "Which version of Psych is the mod made for? (if you're using one)"
-      options:
-        - "Plus Engine 1.2"
-        - "Plus Engine 1.1"
-        - "Plus Engine 1.0.5"
-        - "Psych Engine 1.0 - 1.0.4"
-        - "Psych Engine 0.7.x"
-        - "Psych Engine 0.6.x"
-        - "Psych Engine older"
-        - "Not using a mod"
+        - "1.0.4"
+        - "1.0.3"
+        - "1.0.2h"
+        - "1.0.2"
+        - "1.0.1"
+        - "1.0"
+        - "1.0 (Prerelease)"
+        - "0.7.x"
+        - "0.6.x or older"
     validations:
       required: true
 

@@ -1,15 +1,11 @@
 package psychlua;
 
-import backend.ClientPrefs;
-
 #if (!flash && sys)
 import flixel.addons.display.FlxRuntimeShader;
 #end
 
 class ShaderFunctions
 {
-	static var shaderDebugSetCount:Int = 0;
-
 	public static function implement(funk:FunkinLua)
 	{
 		var lua = funk.lua;
@@ -29,12 +25,6 @@ class ShaderFunctions
 			if(!ClientPrefs.data.shaders) return false;
 
 			#if (!flash && sys)
-			if(shaders.ErrorHandledShader.isBroken(shader))
-			{
-				FunkinLua.luaTrace('setSpriteShader: Shader $shader failed before, skipping it for this session.', false, false, FlxColor.RED);
-				return false;
-			}
-
 			if(!funk.runtimeShaders.exists(shader) && !funk.initLuaShader(shader))
 			{
 				FunkinLua.luaTrace('setSpriteShader: Shader $shader is missing!', false, false, FlxColor.RED);
@@ -49,23 +39,7 @@ class ShaderFunctions
 
 			if(leObj != null) {
 				var arr:Array<String> = funk.runtimeShaders.get(shader);
-				var runtimeShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, arr[0], arr[1]);
-				shaderDebugSetCount++;
-				trace('[ShaderDebug][Lua] setSpriteShader #$shaderDebugSetCount obj=$obj shader=$shader frag=${arr[0] == null ? 0 : arr[0].length} vert=${arr[1] == null ? 0 : arr[1].length}');
-				runtimeShader.onError = function(error:Dynamic)
-				{
-					if(leObj != null && leObj.shader == runtimeShader)
-						leObj.shader = null;
-				};
-
-				if(runtimeShader.failed || shaders.ErrorHandledShader.isBroken(shader))
-				{
-					leObj.shader = null;
-					FunkinLua.luaTrace('setSpriteShader: Shader $shader failed to compile and was removed.', false, false, FlxColor.RED);
-					return false;
-				}
-
-				leObj.shader = runtimeShader;
+				leObj.shader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, arr[0], arr[1]);
 				return true;
 			}
 			#else

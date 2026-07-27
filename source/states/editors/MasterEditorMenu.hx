@@ -9,20 +9,15 @@ import states.FreeplayState;
 
 class MasterEditorMenu extends MusicBeatState
 {
-    // ← CAMBIO: Usar índices en lugar de strings traducidos
-    var options:Array<String> = [];
-    
-    // ← NUEVO: Array con las claves de traducción
-	var optionKeys:Array<String> = [
-		'chart_editor',
-		'character_editor', 
-		'stage_editor',
-		'week_editor',
-		'menu_character_editor',
-		'dialogue_editor',
-		'dialogue_portrait_editor',
-		'note_splash_editor',
-		'modchart_converter'
+	var options:Array<String> = [
+		'Chart Editor',
+		'Character Editor',
+		'Stage Editor',
+		'Week Editor',
+		'Menu Character Editor',
+		'Dialogue Editor',
+		'Dialogue Portrait Editor',
+		'Note Splash Editor'
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -38,9 +33,6 @@ class MasterEditorMenu extends MusicBeatState
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("Editors Main Menu", null);
 		#end
-
-        // ← NUEVO: Construir array de opciones traducidas
-        buildOptions();
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.scrollFactor.set();
@@ -87,71 +79,51 @@ class MasterEditorMenu extends MusicBeatState
 		super.create();
 	}
 
-    // ← NUEVO: Función para construir opciones traducidas
-    function buildOptions():Void
-    {
-        options = [
-            Language.getPhrase('chart_editor', 'Chart Editor'),
-            Language.getPhrase('character_editor', 'Character Editor'),
-            Language.getPhrase('stage_editor', 'Stage Editor'),
-            Language.getPhrase('week_editor', 'Week Editor'),
-            Language.getPhrase('menu_character_editor', 'Menu Character Editor'),
-            Language.getPhrase('dialogue_editor', 'Dialogue Editor'),
-            Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor'),
-            Language.getPhrase('note_splash_editor', 'Note Splash Editor'),
-            Language.getPhrase('modchart_converter', 'Modchart Converter')
-        ];
-    }
-
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
-		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
+		if (controls.UI_UP_P)
 		{
 			changeSelection(-1);
 		}
-		if (controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed))
+		if (controls.UI_DOWN_P)
 		{
 			changeSelection(1);
 		}
 		#if MODS_ALLOWED
-		if(controls.UI_LEFT_P || (touchPad != null && touchPad.buttonLeft.justPressed))
+		if(controls.UI_LEFT_P)
 		{
 			changeDirectory(-1);
 		}
-		if(controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed))
+		if(controls.UI_RIGHT_P)
 		{
 			changeDirectory(1);
 		}
 		#end
 
-		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
+		if (controls.BACK)
 		{
 			MusicBeatState.switchState(new MainMenuState());
 		}
 
-		if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))
+		if (controls.ACCEPT)
 		{
-            // ← SOLUCION: Usar índice en lugar de string traducido
-            switch(curSelected) {
-                case 0: // Chart Editor
+			switch(options[curSelected]) {
+				case 'Chart Editor'://felt it would be cool maybe
 					LoadingState.loadAndSwitchState(new ChartingState(), false);
-                case 1: // Character Editor
+				case 'Character Editor':
 					LoadingState.loadAndSwitchState(new CharacterEditorState(Character.DEFAULT_CHARACTER, false));
-                case 2: // Stage Editor
+				case 'Stage Editor':
 					LoadingState.loadAndSwitchState(new StageEditorState());
-                case 3: // Week Editor
+				case 'Week Editor':
 					MusicBeatState.switchState(new WeekEditorState());
-                case 4: // Menu Character Editor
+				case 'Menu Character Editor':
 					MusicBeatState.switchState(new MenuCharacterEditorState());
-                case 5: // Dialogue Editor
+				case 'Dialogue Editor':
 					LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
-                case 6: // Dialogue Portrait Editor
+				case 'Dialogue Portrait Editor':
 					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
-                case 7: // Note Splash Editor
+				case 'Note Splash Editor':
 					MusicBeatState.switchState(new NoteSplashEditorState());
-                case 8: // Modchart Converter
-					MusicBeatState.switchState(new ModchartConverterState());
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayState.destroyFreeplayVocals();
@@ -164,8 +136,9 @@ class MasterEditorMenu extends MusicBeatState
 			if (item.targetY == 0)
 				item.alpha = 1;
 		}
+		super.update(elapsed);
 	}
-	
+
 	function changeSelection(change:Int = 0)
 	{
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
@@ -186,11 +159,11 @@ class MasterEditorMenu extends MusicBeatState
 	
 		WeekData.setDirectoryFromWeek();
 		if(directories[curDirectory] == null || directories[curDirectory].length < 1)
-            directoryTxt.text = Language.getPhrase('no_mod_directory_loaded', '< No Mod Directory Loaded >');
+			directoryTxt.text = '< No Mod Directory Loaded >';
 		else
 		{
 			Mods.currentModDirectory = directories[curDirectory];
-            directoryTxt.text = Language.getPhrase('loaded_mod_directory', '< Loaded Mod Directory: {1} >', [Mods.currentModDirectory]);
+			directoryTxt.text = '< Loaded Mod Directory: ' + Mods.currentModDirectory + ' >';
 		}
 		directoryTxt.text = directoryTxt.text.toUpperCase();
 	}

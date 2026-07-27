@@ -3,9 +3,7 @@ package psychlua;
 import Type.ValueType;
 import haxe.Constraints;
 
-import backend.StructurePsychOld;
 import substates.GameOverSubstate;
-import objects.StrumNote;
 
 //
 // Functions that use a high amount of Reflections, which are somewhat CPU intensive
@@ -15,12 +13,6 @@ import objects.StrumNote;
 class ReflectionFunctions
 {
 	static final instanceStr:Dynamic = "##PSYCHLUA_STRINGTOOBJ";
-
-	static function resolveClass(className:String):Class<Dynamic>
-	{
-		return StructurePsychOld.resolveClass(className);
-	}
-	
 	public static function implement(funk:FunkinLua)
 	{
 		var lua:State = funk.lua;
@@ -40,7 +32,7 @@ class ReflectionFunctions
 			return value;
 		});
 		Lua_helper.add_callback(lua, "getPropertyFromClass", function(classVar:String, variable:String, ?allowMaps:Bool = false) {
-			var myClass:Dynamic = resolveClass(classVar);
+			var myClass:Dynamic = Type.resolveClass(classVar);
 			if(myClass == null)
 			{
 				FunkinLua.luaTrace('getPropertyFromClass: Class $classVar not found', false, false, FlxColor.RED);
@@ -58,7 +50,7 @@ class ReflectionFunctions
 			return LuaUtils.getVarInArray(myClass, variable, allowMaps);
 		});
 		Lua_helper.add_callback(lua, "setPropertyFromClass", function(classVar:String, variable:String, value:Dynamic, ?allowMaps:Bool = false, ?allowInstances:Bool = false) {
-			var myClass:Dynamic = resolveClass(classVar);
+			var myClass:Dynamic = Type.resolveClass(classVar);
 			if(myClass == null)
 			{
 				FunkinLua.luaTrace('setPropertyFromClass: Class $classVar not found', false, false, FlxColor.RED);
@@ -77,7 +69,7 @@ class ReflectionFunctions
 			LuaUtils.setVarInArray(myClass, variable, allowInstances ? parseInstances(value) : value, allowMaps);
 			return value;
 		});
-		Lua_helper.add_callback(lua, "getPropertyFromGroup", function(group:String, index:Int, variable:Dynamic, ?allowMaps:Bool = false):Dynamic {
+		Lua_helper.add_callback(lua, "getPropertyFromGroup", function(group:String, index:Int, variable:Dynamic, ?allowMaps:Bool = false) {
 			var split:Array<String> = group.split('.');
 			var realObject:Dynamic = null;
 			if(split.length > 1)
@@ -103,23 +95,7 @@ class ReflectionFunctions
 						FunkinLua.luaTrace('getPropertyFromGroup: Object #$index from group: $group doesn\'t exist!', false, false, FlxColor.RED);
 
 					default: //Is Group
-						var member:Dynamic = realObject.members[index];
-						#if (MODCHARTS_NOTITG_ALLOWED && LUA_ALLOWED)
-						// When NotITG modchart manager is active, expose rendered strum x/y so Lua scripts
-						// using getPropertyFromGroup('playerStrums'...) can track the real visual position.
-						if (member != null && Std.isOfType(member, StrumNote) && Std.isOfType(variable, String))
-						{
-							var propName:String = cast variable;
-							if (propName == 'x' || propName == 'y')
-							{
-								var renderedPoint = LuaModchart.getRenderedStrumPosition(cast member);
-								if (renderedPoint != null)
-									return propName == 'x' ? renderedPoint.x : renderedPoint.y;
-							}
-						}
-						#end
-
-						var result:Dynamic = LuaUtils.getGroupStuff(member, variable, allowMaps);
+						var result:Dynamic = LuaUtils.getGroupStuff(realObject.members[index], variable, allowMaps);
 						return result;
 				}
 			}
@@ -237,7 +213,7 @@ class ReflectionFunctions
 			return Reflect.callMethod(null, parent, parseInstances(args));
 		});
 		Lua_helper.add_callback(lua, "callMethodFromClass", function(className:String, funcToRun:String, ?args:Array<Dynamic>) {
-			return callMethodFromObject(resolveClass(className), funcToRun, parseInstances(args));
+			return callMethodFromObject(Type.resolveClass(className), funcToRun, parseInstances(args));
 		});
 
 		Lua_helper.add_callback(lua, "createInstance", function(variableToSave:String, className:String, ?args:Array<Dynamic>) {
@@ -246,7 +222,7 @@ class ReflectionFunctions
 			if(MusicBeatState.getVariables().get(variableToSave) == null)
 			{
 				if(args == null) args = [];
-				var myType:Dynamic = resolveClass(className);
+				var myType:Dynamic = Type.resolveClass(className);
 		
 				if(myType == null)
 				{
@@ -317,7 +293,7 @@ class ReflectionFunctions
 				var lastIndex:Int = argStr.lastIndexOf('::');
 
 				var split:Array<String> = (lastIndex > -1) ? argStr.substring(0, lastIndex).split('.') : argStr.split('.');
-				arg = (lastIndex > -1) ? resolveClass(argStr.substring(lastIndex+2)) : PlayState.instance;
+				arg = (lastIndex > -1) ? Type.resolveClass(argStr.substring(lastIndex+2)) : PlayState.instance;
 				for (j in 0...split.length)
 				{
 					//trace('Op2: ${Type.getClass(args[i])}, ${split[j]}');
@@ -351,4 +327,3 @@ class ReflectionFunctions
 		return funcToRun != null ? Reflect.callMethod(obj, funcToRun, args) : null;
 	}
 }
-

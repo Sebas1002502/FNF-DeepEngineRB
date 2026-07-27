@@ -39,69 +39,32 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Color Accessibility',
-		    "Select several options according to your color blindness disorder.",
-			'colorblindMode',
-			STRING,
-			['None', 'Protanopia', 'Protanomaly', 'Deuteranopia', 'Deuteranomaly', 'Tritanopia', 'Tritanomaly', 'Achromatopsia', 'Achromatomaly']);
-		option.onChange = () -> {
-			ClientPrefs.saveSettings();
-			shaders.ColorblindFilter.UpdateColors();
-		};
-		addOption(option);
-
 		var option:Option = new Option('GPU Caching', //Name
 			"If checked, allows the GPU to be used for caching textures, decreasing RAM usage.\nDon't turn this on if you have a shitty Graphics Card.", //Description
 			'cacheOnGPU',
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('FPS Counter Mode',
-			'Choose how much performance info is shown in the top-left overlay.',
-			'fpsCounterMode',
-			STRING,
-			['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug']);
-		option.onChange = onChangeFPSCounterMode;
-		addOption(option);
-
-		#if native
-		var option:Option = new Option('VSync',
-			'If checked, enables VSync, fixing screen tearing at the cost of capping FPS to the monitor refresh rate.\nRestart the game to fully apply it.',
-			'vsync',
-			BOOL);
-		option.onChange = onChangeVSync;
-		addOption(option);
-		#end
-
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
-		var option:Option = new Option('Framerate Mode',
-			'Choose how the engine handles update/draw timing.\nBase matches Psych Engine, Fixed is lighter, Interpolated is smoother.\nRestart the game to apply changes.',
-			'framerateMode',
-			STRING,
-			ClientPrefs.FRAMERATE_MODES);
-		addOption(option);
-
 		var option:Option = new Option('Framerate',
-			"Pretty self explanatory, isn't it?\nRestart the game to apply changes.",
+			"Pretty self explanatory, isn't it?",
 			'framerate',
 			INT);
 		addOption(option);
 
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-		option.minValue = #if mobile 30 #else 60 #end;
+		option.minValue = 60;
 		option.maxValue = 240;
 		option.defaultValue = Std.int(FlxMath.bound(refreshRate, option.minValue, option.maxValue));
 		option.displayFormat = '%v FPS';
+		option.onChange = onChangeFramerate;
 		#end
 
-		#if windows
-		var option:Option = new Option('Fullscreen Mode',
-			'Choose how fullscreen behaves: borderless, borderless fix or exclusive fullscreen.',
-			'fullscreenMode',
-			STRING,
-			['Borderless', 'Borderless Fix', 'Exclusive']);
+		var option:Option = new Option('FPS Rework',
+			"If checked, this works around the game becoming \"slow\" and \"smooth\" when the current FPS is lower than the FPS cap.",
+			'fpsRework',
+			BOOL);
 		addOption(option);
-		#end
 
 		super();
 		insert(1, boyfriend);
@@ -118,16 +81,28 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		}
 	}
 
-	#if native
-	function onChangeVSync()
-		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
-	#end
-
-	function onChangeFPSCounterMode()
+	function onChangeFramerate()
 	{
-		ClientPrefs.normalizeFPSCounterPrefs();
-		if (Main.fpsVar != null)
-			Main.fpsVar.applyPrefs();
+		if(ClientPrefs.data.framerate > FlxG.drawFramerate)
+		{
+			if (ClientPrefs.data.fpsRework)
+				FlxG.stage.window.frameRate = ClientPrefs.data.framerate;
+			else
+			{
+				FlxG.updateFramerate = ClientPrefs.data.framerate;
+				FlxG.drawFramerate = ClientPrefs.data.framerate;
+			}
+		}
+		else
+		{
+			if (ClientPrefs.data.fpsRework)
+				FlxG.stage.window.frameRate = ClientPrefs.data.framerate;
+			else
+			{
+				FlxG.drawFramerate = ClientPrefs.data.framerate;
+				FlxG.updateFramerate = ClientPrefs.data.framerate;
+			}
+		}
 	}
 
 	override function changeSelection(change:Int = 0)

@@ -32,12 +32,6 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 		
-		var option:Option = new Option('Bad and Shit Break Combo',
-			"If checked, hitting Bad or Shit notes will break your combo\nand count as Combo Breaks instead of just Misses.",
-			'badShitBreakCombo',
-			BOOL);
-		addOption(option);
-		
 		var option:Option = new Option('Auto Pause',
 			"If checked, the game automatically pauses if the screen isn't on focus.",
 			'autoPause',
@@ -57,28 +51,19 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		#if mobile
 		var option:Option = new Option('Game Over Vibration',
 			"If checked, your device will vibrate at game over.",
 			'gameOverVibration',
 			BOOL);
 		addOption(option);
 		option.onChange = onChangeVibration;
-		#end
-		
+
 		var option:Option = new Option('Sustains as One Note',
 			"If checked, Hold Notes can't be pressed if you miss,\nand count as a single Hit/Miss.\nUncheck this if you prefer the old Input System.",
 			'guitarHeroSustains',
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Hitsound in what way',
-			'If checked, note and keys do a hitsound when pressed!, else just when notes are hit!',
-			'hitsoundType',
-			STRING,
-			['None', 'Keys', 'Notes']);
-		addOption(option);
-		
 		var option:Option = new Option('Hitsound Volume',
 			'Funny notes does \"Tick!\" when you hit them.',
 			'hitsoundVolume',
@@ -91,33 +76,14 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		option.onChange = onChangeHitsoundVolume;
 
-		var option:Option = new Option('Hitsound',
-			'Funny notes does \"Any Sound\" when you hit them.',
-			'hitSounds',
-			STRING,
-			['None', 'quaver', 'osu', 'clap', 'camellia', 'stepmania', '21st century humor', 'vine boom', 'sexus']);
-		addOption(option);
-		option.onChange = onChangeHitsound;
-
 		var option:Option = new Option('Rating Offset',
-			'Changes how late/early you have to hit for a "flawless!!"\nHigher values mean you have to hit later.',
+			'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
 			'ratingOffset',
 			INT);
 		option.displayFormat = '%vms';
 		option.scrollSpeed = 20;
 		option.minValue = -30;
 		option.maxValue = 30;
-		addOption(option);
-
-		var option:Option = new Option('Flawless!! Hit Window',
-			'Changes the amount of time you have\nfor hitting a "Flawless!!" in milliseconds.',
-			'flawlessWindow',
-			FLOAT);
-		option.displayFormat = '%vms';
-		option.scrollSpeed = 5;
-		option.minValue = 15.0;
-		option.maxValue = 25.0;
-		option.changeValue = 0.1;
 		addOption(option);
 
 		var option:Option = new Option('Sick! Hit Window',
@@ -163,46 +129,11 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.changeValue = 0.1;
 		addOption(option);
 
-		var option:Option = new Option('Accuracy System',
-			"Choose the accuracy calculation system:\nWife3 - StepMania precision timing\nPsych - Rating mod based\nSimple - Basic hits/total\nosu!mania - Weighted judgement system\nDJMAX - Combo bonus system\nITG - Dance Points system\n\n",
-			'accuracySystem',
-			STRING,
-			['Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG']);
-		addOption(option);
-
-		var option:Option = new Option('System Score Multiplier',
-			"Choose the scoring system for note hits",
-			'systemScoreMultiplier',
-			STRING,
-			['Psych', 'Codename']);
-		addOption(option);
-
 		super();
 	}
 
-	var daHitSound:FlxSound = new FlxSound();
-
-	function onChangeHitsound()
-	{
-		if (ClientPrefs.data.hitSounds != "None" && ClientPrefs.data.hitsoundVolume != 0)
-		{
-			daHitSound.loadEmbedded(Paths.sound('hitsounds/${ClientPrefs.data.hitSounds}'));
-			daHitSound.volume = ClientPrefs.data.hitsoundVolume;
-			daHitSound.play();
-		}
-	}
-
 	function onChangeHitsoundVolume()
-	{
-		if (ClientPrefs.data.hitSounds != "None")
-		{
-			daHitSound.loadEmbedded(Paths.sound('hitsounds/${ClientPrefs.data.hitSounds}'));
-			daHitSound.volume = ClientPrefs.data.hitsoundVolume;
-			daHitSound.play();
-		}
-		else
-			FlxG.sound.play(Paths.sound('hitsound'), ClientPrefs.data.hitsoundVolume);
-	}
+		FlxG.sound.play(Paths.sound('hitsound'), ClientPrefs.data.hitsoundVolume);
 
 	function onChangeAutoPause()
 		FlxG.autoPause = ClientPrefs.data.autoPause;

@@ -9,9 +9,9 @@ class FlashingState extends MusicBeatState
 {
 	public static var leftState:Bool = false;
 
-	public var isYes:Bool = true;
-	public var texts:FlxTypedSpriteGroup<FlxText>;
-	public var bg:FlxSprite;
+	var isYes:Bool = true;
+	var texts:FlxTypedSpriteGroup<FlxText>;
+	var bg:FlxSprite;
 
 	override function create()
 	{
@@ -77,7 +77,7 @@ class FlashingState extends MusicBeatState
 				FlxFlicker.flicker(button, 1, 0.1, false, true, function(flk:FlxFlicker) {
 					new FlxTimer().start(0.5, function (tmr:FlxTimer) {
 						FlxTween.tween(texts, {alpha: 0}, 0.2, {
-							onComplete: (_) -> MusicBeatState.switchState(backend.ScriptableState.tryCreate('TitleState', new TitleState()))
+							onComplete: (_) -> MusicBeatState.switchState(new TitleState())
 						});
 						FlxTween.tween(touchPad, {alpha: 0}, 0.2);
 					});
@@ -85,7 +85,7 @@ class FlashingState extends MusicBeatState
 			} else {
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				FlxTween.tween(texts, {alpha: 0}, 1, {
-					onComplete: (_) -> MusicBeatState.switchState(backend.ScriptableState.tryCreate('TitleState', new TitleState()))
+					onComplete: (_) -> MusicBeatState.switchState(new TitleState())
 				});
 				FlxTween.tween(touchPad, {alpha: 0}, 1);
 			}

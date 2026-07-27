@@ -1,11 +1,12 @@
 package objects;
 
 import backend.animation.PsychAnimationController;
-import backend.AssetLoader;
 
 import flixel.util.FlxSort;
 import flixel.util.FlxDestroyUtil;
 
+import openfl.utils.AssetType;
+import openfl.utils.Assets;
 import haxe.Json;
 
 import backend.Song;
@@ -26,7 +27,6 @@ typedef CharacterFile = {
 	var healthbar_colors:Array<Int>;
 	var vocals_file:String;
 	@:optional var _editor_isPlayer:Null<Bool>;
-	@:optional var animatedIcon:Bool;
 }
 
 typedef AnimArray = {
@@ -51,7 +51,6 @@ class Character extends FlxSprite
 
 	public var isPlayer:Bool = false;
 	public var curCharacter:String = DEFAULT_CHARACTER;
-	public var animatedIcon:Bool = false;
 
 	public var holdTimer:Float = 0;
 	public var heyTimer:Float = 0;
@@ -111,7 +110,11 @@ class Character extends FlxSprite
 		var characterPath:String = 'characters/$character.json';
 
 		var path:String = Paths.getPath(characterPath, TEXT);
-		if (!AssetLoader.exists(path, TEXT))
+		#if MODS_ALLOWED
+		if (!FileSystem.exists(path))
+		#else
+		if (!Assets.exists(path))
+		#end
 		{
 			path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER + '.json'); //If a character couldn't be found, change him to BF just to prevent a crash
 			missingCharacter = true;
@@ -121,10 +124,11 @@ class Character extends FlxSprite
 
 		try
 		{
-			var rawJson:String = AssetLoader.loadText(path);
-			if(rawJson == null || rawJson.length == 0)
-				throw 'Missing character file: $path';
-			loadCharacterFile(Json.parse(rawJson));
+			#if MODS_ALLOWED
+			loadCharacterFile(Json.parse(File.getContent(path)));
+			#else
+			loadCharacterFile(Json.parse(Assets.getText(path)));
+			#end
 		}
 		catch(e:Dynamic)
 		{
@@ -141,56 +145,9 @@ class Character extends FlxSprite
 	{
 		isAnimateAtlas = false;
 
-		var isVSlice:Bool = (json.assetPath != null) || (json.animations != null && json.animations.length > 0 && json.animations[0].prefix != null);
-		
-		if (isVSlice)
-		{
-			trace('V-Slice character JSON detected and converted');
-
-			if (json.assetPath != null) 
-			{
-				var cleanPath:String = json.assetPath;
-				if (cleanPath.startsWith("shared:"))
-					cleanPath = cleanPath.substring(7);
-					
-				json.image = cleanPath;
-			}
-			
-			if (json.flipX != null) json.flip_x = json.flipX;
-			if (json.cameraOffsets != null) json.camera_position = json.cameraOffsets;
-			if (json.singTime != null) json.sing_duration = json.singTime;
-			if (json.isPixel != null) json.no_antialiasing = json.isPixel;
-			
-			if (json.healthIcon != null && json.healthIcon.id != null) 
-				json.healthicon = json.healthIcon.id;
-			
-			if (json.offsets != null) json.position = json.offsets;
-
-			if (json.animations != null)
-			{
-				var anims:Array<Dynamic> = (json.animations : Array<Dynamic>);
-				var newAnims:Array<Dynamic> = new Array<Dynamic>();
-				
-				for (a in anims)
-				{
-					var na:Dynamic = {
-						anim: (a.name != null && a.name != '') ? a.name : (a.anim != null ? a.anim : ''),
-						name: (a.prefix != null && a.prefix != '') ? a.prefix : (a.animation != null ? a.animation : ''),
-						fps: (a.frameRate != null) ? a.frameRate : (a.fps != null ? a.fps : 24),
-						loop: (a.looped != null) ? a.looped : (a.loop != null ? a.loop : false),
-						indices: (a.frameIndices != null) ? a.frameIndices : (a.indices != null ? a.indices : []),
-						offsets: (a.offsets != null) ? a.offsets : [0, 0]
-					};
-					
-					newAnims.push(na);
-				}
-				json.animations = newAnims;
-			}
-		}
-
 		#if flxanimate
 		var animToFind:String = Paths.getPath('images/' + json.image + '/Animation.json', TEXT);
-		if (AssetLoader.exists(animToFind, TEXT))
+		if (#if MODS_ALLOWED FileSystem.exists(animToFind) || #end Assets.exists(animToFind))
 			isAnimateAtlas = true;
 		#end
 
@@ -235,9 +192,10 @@ class Character extends FlxSprite
 		flipX = (json.flip_x != isPlayer);
 		healthColorArray = (json.healthbar_colors != null && json.healthbar_colors.length > 2) ? json.healthbar_colors : [161, 161, 161];
 		vocalsFile = json.vocals_file != null ? json.vocals_file : '';
-		animatedIcon = (json.animatedIcon == true);
 		originalFlipX = (json.flip_x == true);
-		editorIsPlayer = json._editor_isPlayer;		// antialiasing
+		editorIsPlayer = json._editor_isPlayer;
+
+		// antialiasing
 		noAntialiasing = (json.no_antialiasing == true);
 		antialiasing = ClientPrefs.data.antialiasing ? !noAntialiasing : false;
 

@@ -35,6 +35,7 @@ import android.Settings as AndroidSettings;
 import android.Tools as AndroidTools;
 import android.os.Build.VERSION as AndroidVersion;
 import android.os.Build.VERSION_CODES as AndroidVersionCode;
+import android.os.BatteryManager as AndroidBatteryManager;
 #end
 
 #if sys
@@ -56,23 +57,15 @@ import backend.BaseStage;
 import backend.Difficulty;
 import backend.Mods;
 import backend.Language;
-import backend.BuildInfo;
-import backend.StructurePsychOld;
 import mobile.backend.StorageUtil;
 
 import backend.ui.*; //Psych-UI
 
 import objects.Alphabet;
 import objects.BGSprite;
-import objects.Cursor;
 
 import states.PlayState;
 import states.LoadingState;
-
-import psychlua.LuaUtils.Function_Stop;
-import psychlua.LuaUtils.Function_Continue;
-import backend.ScriptableState;
-import backend.ScriptableSubstate;
 
 #if flxanimate
 import flxanimate.*;

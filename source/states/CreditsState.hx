@@ -1,12 +1,6 @@
 package states;
 
 import objects.AttachedSprite;
-import flixel.effects.FlxFlicker;
-import flixel.util.FlxColor;
-import flixel.math.FlxMath;
-import flixel.text.FlxText;
-import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
 
 class CreditsState extends MusicBeatState
 {
@@ -16,29 +10,26 @@ class CreditsState extends MusicBeatState
 	private var iconArray:Array<AttachedSprite> = [];
 	private var creditsStuff:Array<Array<String>> = [];
 
-	public var bg:FlxSprite;
-	public var descText:FlxText;
-	public var descBg:FlxSprite;
-	public var intendedColor:FlxColor;
-	public var colorTween:FlxTween;
+	var bg:FlxSprite;
+	var descText:FlxText;
+	var intendedColor:FlxColor;
+	var descBox:AttachedSprite;
 
-	public var offsetThing:Float = -75;
+	var offsetThing:Float = -75;
 
 	override function create()
 	{
 		#if DISCORD_ALLOWED
+		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
 		persistentUpdate = true;
-
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.color = FlxColor.BLACK;
-		bg.alpha = 0.9;
 		add(bg);
 		bg.screenCenter();
-
+		
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
@@ -47,43 +38,6 @@ class CreditsState extends MusicBeatState
 		#end
 
 		var defaultList:Array<Array<String>> = [ //Name - Icon name - Description - Link - BG Color
-			['Plus Engine Team'],
-			[
-			'Lenin Asto',
-			"len",              
-			"Programmer of Plus Engine",                        
-			"https://www.youtube.com/@Lenin_Anonimo_Of",
-			"03FC88"
-			],
-			[
-			'Andres',      
-			'slushi',  
-			'Creator and owner of several codes used based on the Slushi Engine',    
-			'https://github.com/Slushi-Github',    
-			'8FD9D1'
-			],
-			[
-			'sirthegamercoder',	
-			'sir',    
-			'Indonesian translation and others PRs',       		
-			'https://bsky.app/profile/stgmd.bsky.social',	     
-			'7FDBFF'
-			],
-			[
-			'TheoDev',             
-			"theo",         
-			"Owner, Lead coder of Funkin Modchart",                       
-			"https://github.com/TheoDevelops",    
-			"FFB347"
-			],
-			[
-			'That0neIdiot',
-			"that0ne",
-			"Miss rating sprite",
-			"https://www.youtube.com/@That0neIdiotGB",
-			"FFFFFF"
-			],
-			[''],
 			['Mobile Porting Team'],
 			['HomuHomu833',			'homura',             'Head Porter of Psych Engine and Author of linc_luajit-rewriten',                       'https://youtube.com/@HomuHomu833',		'FFE7C0'],
 			['Karim Akra',			'karim',			'Second Porter of Psych Engine',						'https://youtube.com/@Karim0690',		'FFB4F0'],
@@ -92,6 +46,8 @@ class CreditsState extends MusicBeatState
 			["Psych Engine Team"],
 			["Shadow Mario",		"shadowmario",		"Main Programmer and Head of Psych Engine",					"https://ko-fi.com/shadowmario",	"444444"],
 			["Riveren",				"riveren",			"Main Artist/Animator of Psych Engine",						"https://x.com/riverennn",			"14967B"],
+			[""],
+			["Former Engine Members"],
 			["bb-panzu",			"bb",				"Ex-Programmer of Psych Engine",							"https://x.com/bbsub3",				"3E813A"],
 			[""],
 			["Engine Contributors"],
@@ -119,7 +75,7 @@ class CreditsState extends MusicBeatState
 		
 		for(i in defaultList)
 			creditsStuff.push(i);
-
+	
 		for (i => credit in creditsStuff)
 		{
 			var isSelectable:Bool = !unselectableCheck(i);
@@ -148,6 +104,7 @@ class CreditsState extends MusicBeatState
 				icon.xAdd = optionText.width + 10;
 				icon.sprTracker = optionText;
 	
+				// using a FlxGroup is too much fuss!
 				iconArray.push(icon);
 				add(icon);
 				Mods.currentModDirectory = '';
@@ -156,18 +113,20 @@ class CreditsState extends MusicBeatState
 			}
 			else optionText.alignment = CENTERED;
 		}
-
-		descBg = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
-		descBg.alpha = 0.8;
-		descBg.antialiasing = ClientPrefs.data.antialiasing;
-		add(descBg);
+		
+		descBox = new AttachedSprite();
+		descBox.makeGraphic(1, 1, FlxColor.BLACK);
+		descBox.xAdd = -10;
+		descBox.yAdd = -10;
+		descBox.alphaMult = 0.6;
+		descBox.alpha = 0.6;
+		add(descBox);
 
 		descText = new FlxText(50, FlxG.height + offsetThing - 25, 1180, "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
+		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER/*, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK*/);
 		descText.scrollFactor.set();
-		descText.borderStyle = OUTLINE;
-		descText.borderColor = FlxColor.BLACK;
-		descText.borderSize = 2;
+		//descText.borderSize = 2.4;
+		descBox.sprTracker = descText;
 		add(descText);
 
 		bg.color = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
@@ -181,11 +140,8 @@ class CreditsState extends MusicBeatState
 
 	var quitting:Bool = false;
 	var holdTime:Float = 0;
-	
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
-		
 		if (FlxG.sound.music.volume < 0.7)
 		{
 			FlxG.sound.music.volume += 0.5 * elapsed;
@@ -198,8 +154,8 @@ class CreditsState extends MusicBeatState
 				var shiftMult:Int = 1;
 				if(FlxG.keys.pressed.SHIFT) shiftMult = 3;
 
-				var upP = controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed);
-				var downP = controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed);
+				var upP = controls.UI_UP_P;
+				var downP = controls.UI_DOWN_P;
 
 				if (upP)
 				{
@@ -212,7 +168,7 @@ class CreditsState extends MusicBeatState
 					holdTime = 0;
 				}
 
-				if(controls.UI_DOWN || controls.UI_UP || (touchPad != null && (touchPad.buttonDown.pressed || touchPad.buttonUp.pressed)))
+				if(controls.UI_DOWN || controls.UI_UP)
 				{
 					var checkLastHold:Int = Math.floor((holdTime - 0.5) * 10);
 					holdTime += elapsed;
@@ -220,35 +176,22 @@ class CreditsState extends MusicBeatState
 
 					if(holdTime > 0.5 && checkNewHold - checkLastHold > 0)
 					{
-						var isUp = controls.UI_UP || (touchPad != null && touchPad.buttonUp.pressed);
-						changeSelection((checkNewHold - checkLastHold) * (isUp ? -shiftMult : shiftMult));
+						changeSelection((checkNewHold - checkLastHold) * (controls.UI_UP ? -shiftMult : shiftMult));
 					}
 				}
 			}
 
-			if((controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed)) && (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)) {
-				var selectedText = grpOptions.members[curSelected];
-				if (selectedText != null)
-				{
-					FlxFlicker.flicker(selectedText, 0.5, 0.06, true);
-					FlxG.sound.play(Paths.sound('confirmMenu'));
-				}
-
-				new FlxTimer().start(0.3, function(tmr:FlxTimer) {
-					CoolUtil.browserLoad(creditsStuff[curSelected][3]);
-				});
+			if(controls.ACCEPT && (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)) {
+				CoolUtil.browserLoad(creditsStuff[curSelected][3]);
 			}
-			if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
+			if (controls.BACK)
 			{
-				if(colorTween != null)
-					colorTween.cancel();
-
 				FlxG.sound.play(Paths.sound('cancelMenu'));
+				MusicBeatState.switchState(new MainMenuState());
 				quitting = true;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
 		}
-
+		
 		for (item in grpOptions.members)
 		{
 			if(!item.bold)
@@ -266,6 +209,7 @@ class CreditsState extends MusicBeatState
 				}
 			}
 		}
+		super.update(elapsed);
 	}
 
 	var moveTween:FlxTween = null;
@@ -279,14 +223,12 @@ class CreditsState extends MusicBeatState
 		while(unselectableCheck(curSelected));
 
 		var newColor:FlxColor = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
+		//trace('The BG color is: $newColor');
 		if(newColor != intendedColor)
 		{
 			intendedColor = newColor;
-			if(colorTween != null) colorTween.cancel();
-
-			colorTween = FlxTween.color(bg, 0.8, bg.color, intendedColor, {
-				onComplete: function(twn:FlxTween) colorTween = null
-			});
+			FlxTween.cancelTweensOf(bg);
+			FlxTween.color(bg, 1, bg.color, intendedColor);
 		}
 
 		for (num => item in grpOptions.members)
@@ -303,23 +245,16 @@ class CreditsState extends MusicBeatState
 		descText.text = creditsStuff[curSelected][2];
 		if(descText.text.trim().length > 0)
 		{
-			descText.visible = true;
-			descBg.visible = true;
+			descText.visible = descBox.visible = true;
 			descText.y = FlxG.height - descText.height + offsetThing - 60;
-
-			descBg.setPosition(descText.x - 10, descText.y - 10);
-			descBg.scale.set(descText.width + 20, descText.height + 20);
-			descBg.updateHitbox();
 	
 			if(moveTween != null) moveTween.cancel();
 			moveTween = FlxTween.tween(descText, {y : descText.y + 75}, 0.25, {ease: FlxEase.sineOut});
-			FlxTween.tween(descBg, {y : descText.y + 75 - 10}, 0.25, {ease: FlxEase.sineOut});
+	
+			descBox.setGraphicSize(Std.int(descText.width + 20), Std.int(descText.height + 25));
+			descBox.updateHitbox();
 		}
-		else 
-		{
-			descText.visible = false;
-			descBg.visible = false;
-		}
+		else descText.visible = descBox.visible = false;
 	}
 
 	#if MODS_ALLOWED
@@ -328,6 +263,7 @@ class CreditsState extends MusicBeatState
 		var creditsFile:String = Paths.mods(folder + '/data/credits.txt');
 		
 		#if TRANSLATIONS_ALLOWED
+		//trace('/data/credits-${ClientPrefs.data.language}.txt');
 		var translatedCredits:String = Paths.mods(folder + '/data/credits-${ClientPrefs.data.language}.txt');
 		#end
 

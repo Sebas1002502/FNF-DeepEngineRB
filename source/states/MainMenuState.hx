@@ -2,13 +2,9 @@ package states;
 
 import flixel.FlxObject;
 import flixel.effects.FlxFlicker;
+import lime.app.Application;
 import states.editors.MasterEditorMenu;
 import options.OptionsState;
-import flixel.text.FlxText;
-
-#if mobile
-import mobile.backend.MobileScaleMode;
-#end
 
 enum MainMenuColumn {
 	LEFT;
@@ -18,51 +14,30 @@ enum MainMenuColumn {
 
 class MainMenuState extends MusicBeatState
 {
-	public static var fnfVersion:String = '0.2.8';
-    public static var plusEngineVersion:String = '1.3'; // Nothing interesting =)
-	public static var psychEngineVersion:String = "1.0.4 (" + plusEngineVersion + ")"; // This is also used for Discord RPC
+	public static var psychEngineVersion:String = '1.0.4'; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
-	public var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
+	var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
 
-	public var menuItems:FlxTypedGroup<FlxSprite>;
-	public var leftItem:FlxSprite;
-	public var rightItem:FlxSprite;
-
-	inline function safeX(x:Float):Float
-	{
-		#if mobile
-		return MobileScaleMode.getHorizontalOffset() + x;
-		#else
-		return x;
-		#end
-	}
-
-	inline function safeWidth():Float
-	{
-		#if mobile
-		return MobileScaleMode.getSafeWidth();
-		#else
-		return FlxG.width;
-		#end
-	}
+	var menuItems:FlxTypedGroup<FlxSprite>;
+	var leftItem:FlxSprite;
+	var rightItem:FlxSprite;
 
 	//Centered/Text options
-	public var optionShit:Array<String> = [
+	var optionShit:Array<String> = [
 		'story_mode',
 		'freeplay',
 		#if MODS_ALLOWED 'mods', #end
 		'credits'
 	];
 
-	public var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
-	public var rightOption:String = 'options';
+	var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
+	var rightOption:String = 'options';
 
-	public var magenta:FlxSprite;
-	public var camFollow:FlxObject;
+	var magenta:FlxSprite;
+	var camFollow:FlxObject;
 
 	static var showOutdatedWarning:Bool = true;
-	static var updateWarningShown:Bool = false; // Para mostrar el aviso solo una vez por sesión
 	override function create()
 	{
 		super.create();
@@ -88,7 +63,6 @@ class MainMenuState extends MusicBeatState
 		bg.screenCenter();
 		add(bg);
 
-
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
 
@@ -113,30 +87,21 @@ class MainMenuState extends MusicBeatState
 		}
 
 		if (leftOption != null)
-			leftItem = createMenuItem(leftOption, safeX(60), 490);
+			leftItem = createMenuItem(leftOption, 60, 490);
 		if (rightOption != null)
 		{
-			rightItem = createMenuItem(rightOption, safeX(safeWidth() - 60), 490);
+			rightItem = createMenuItem(rightOption, FlxG.width - 60, 490);
 			rightItem.x -= rightItem.width;
 		}
 
-		var buildLine:String = BuildInfo.versionLine();
-		var hasBuildLine:Bool = buildLine.length > 0;
-		var psychVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 64 : 44), 0, "Psych Engine v" + psychEngineVersion, 12);
+		var psychVer:FlxText = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 12);
 		psychVer.scrollFactor.set();
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(psychVer);
-		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0, "Friday Night Funkin' v" + fnfVersion, 12);
+		var fnfVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
 		fnfVer.scrollFactor.set();
 		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(fnfVer);
-		if (hasBuildLine)
-		{
-			var buildVer:FlxText = new FlxText(safeX(12), FlxG.height - 24, 0, buildLine, 12);
-			buildVer.scrollFactor.set();
-			buildVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			add(buildVer);
-		}
 		changeItem();
 
 		#if ACHIEVEMENTS_ALLOWED
@@ -151,29 +116,17 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		#if CHECK_FOR_UPDATES
-		tryShowOutdatedWarning();
+		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && substates.OutdatedSubState.updateVersion != psychEngineVersion) {
+			persistentUpdate = false;
+			showOutdatedWarning = false;
+			openSubState(new substates.OutdatedSubState());
+		}
 		#end
 
 		FlxG.camera.follow(camFollow, null, 0.15);
 
-		addTouchPad('NONE', 'E_X');
+		addTouchPad('NONE', 'E');
 	}
-
-	#if CHECK_FOR_UPDATES
-	function tryShowOutdatedWarning():Void
-	{
-		if (!showOutdatedWarning || !ClientPrefs.data.checkForUpdates || updateWarningShown || selectedSomethin)
-			return;
-
-		if (CoolUtil.hasUpdate && CoolUtil.latestVersion != plusEngineVersion)
-		{
-			substates.OutdatedSubState.updateVersion = CoolUtil.latestVersion;
-			persistentUpdate = false;
-			updateWarningShown = true;
-			openSubState(backend.ScriptableSubstate.tryCreate('OutdatedSubState', new substates.OutdatedSubState()));
-		}
-	}
-	#end
 
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
 	{
@@ -197,10 +150,6 @@ class MainMenuState extends MusicBeatState
 	{
 		if (FlxG.sound.music.volume < 0.8)
 			FlxG.sound.music.volume = Math.min(FlxG.sound.music.volume + 0.5 * elapsed, 0.8);
-
-		#if CHECK_FOR_UPDATES
-		tryShowOutdatedWarning();
-		#end
 
 		if (!selectedSomethin)
 		{
@@ -313,7 +262,7 @@ class MainMenuState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('TitleState', new TitleState()));
+				MusicBeatState.switchState(new TitleState());
 			}
 
 			if (controls.ACCEPT || (FlxG.mouse.overlaps(menuItems, FlxG.camera) && FlxG.mouse.justPressed && allowMouse))
@@ -347,24 +296,24 @@ class MainMenuState extends MusicBeatState
 					switch (option)
 					{
 						case 'story_mode':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
+							MusicBeatState.switchState(new StoryMenuState());
 						case 'freeplay':
-							MusicBeatState.switchState(FreeplayStateSelector.create());
+							MusicBeatState.switchState(new FreeplayState());
 
 						#if MODS_ALLOWED
 						case 'mods':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState()));
+							MusicBeatState.switchState(new ModsMenuState());
 						#end
 
 						#if ACHIEVEMENTS_ALLOWED
 						case 'achievements':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('AchievementsMenuState', new AchievementsMenuState()));
+							MusicBeatState.switchState(new AchievementsMenuState());
 						#end
 
 						case 'credits':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('CreditsState', new CreditsState()));
+							MusicBeatState.switchState(new CreditsState());
 						case 'options':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('OptionsState', new OptionsState()));
+							MusicBeatState.switchState(new OptionsState());
 							OptionsState.onPlayState = false;
 							if (PlayState.SONG != null)
 							{
@@ -395,15 +344,8 @@ class MainMenuState extends MusicBeatState
 			{
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MasterEditorMenu', new MasterEditorMenu()));
+				MusicBeatState.switchState(new MasterEditorMenu());
 			}
-
-			#if mobile
-			if (touchPad.buttonX.justPressed)
-			{
-				lime.system.System.exit(0);
-			}
-			#end
 		}
 
 		super.update(elapsed);

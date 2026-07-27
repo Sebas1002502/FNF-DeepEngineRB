@@ -5,7 +5,6 @@ import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flash.events.KeyboardEvent;
 import lime.system.Clipboard;
-import options.OptionsMenuTheme;
 
 enum abstract AccentCode(Int) from Int from UInt to Int to UInt
 {
@@ -75,7 +74,7 @@ class PsychUIInputText extends FlxSpriteGroup
 		add(this.textObj);
 		add(this.caret);
 
-		applyThemeColors();
+		this.textObj.color = FlxColor.BLACK;
 		this.textObj.textField.selectable = false;
 		this.textObj.textField.wordWrap = false;
 		this.textObj.textField.multiline = false;
@@ -87,17 +86,6 @@ class PsychUIInputText extends FlxSpriteGroup
 		this.text = text;
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-	}
-
-	function applyThemeColors():Void
-	{
-		var fill:Int = OptionsMenuTheme.cardFill(false);
-		var textColor:Int = OptionsMenuTheme.readableTextOn(fill);
-		bg.color = fill;
-		behindText.color = OptionsMenuTheme.difficultyCardStroke(OptionsMenuTheme.current().accent, false);
-		textObj.color = textColor;
-		selection.color = OptionsMenuTheme.current().accent;
-		caret.color = textColor;
 	}
 	
 	public var selectIndex:Int = -1;
@@ -488,28 +476,22 @@ class PsychUIInputText extends FlxSpriteGroup
 		if(textObj == null || !textObj.exists) return;
 
 		var textField = textObj.textField;
-		var textLen = text != null ? text.length : 0;
-		var safeCaretIndex = Std.int(Math.max(0, Math.min(textLen, caretIndex)));
-		var safeSelectIndex = selectIndex;
-		if (safeSelectIndex >= 0)
-			safeSelectIndex = Std.int(Math.max(0, Math.min(textLen, safeSelectIndex)));
-
-		textField.setSelection(safeCaretIndex, safeCaretIndex);
+		textField.setSelection(caretIndex, caretIndex);
 		_caretTime = 0;
 		if(caret != null && caret.exists)
 		{
 			caret.y = textObj.y + 2;
 			caret.x = textObj.x + 1 - textObj.textField.scrollH;
-			if(safeCaretIndex > 0 && _boundaries.length > 0)
-				caret.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, safeCaretIndex-1)))];
+			if(caretIndex > 0)
+				caret.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, caretIndex-1)))];
 		}
 		
 		if(selection != null && selection.exists)
 		{
 			selection.y = textObj.y + 2;
 			selection.x = textObj.x + 1 - textObj.textField.scrollH;
-			if(safeSelectIndex > 0 && _boundaries.length > 0)
-				selection.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, safeSelectIndex-1)))];
+			if(selectIndex > 0)
+				selection.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, selectIndex-1)))];
 
 			selection.scale.y = textField.textHeight;
 			selection.scale.x = caret.x - selection.x;
@@ -628,9 +610,6 @@ class PsychUIInputText extends FlxSpriteGroup
 	var _boundaries:Array<Float> = [];
 	function set_text(v:String)
 	{
-		if (v == null)
-			v = '';
-
 		for (i in 0..._boundaries.length) _boundaries.pop();
 		v = filter(v);
 

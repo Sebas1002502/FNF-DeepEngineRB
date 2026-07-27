@@ -9,8 +9,8 @@ import openfl.net.FileReference;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.events.MouseEvent;
-import openfl.events.TouchEvent;
 import openfl.geom.Point;
+import openfl.utils.Assets;
 
 import objects.Character;
 import objects.HealthIcon;
@@ -60,9 +60,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	var cameraPosition:Point = new Point();
 	var isDragging:Bool = false;
-	var isDraggingChar:Bool = false;
-	var dragStartTouch:FlxPoint = FlxPoint.get();
-	var dragStartPos:Array<Float> = [0, 0];
 
 	public function new(char:String = null, goToPlayState:Bool = true)
 	{
@@ -177,10 +174,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			FlxG.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseEvent);
 			FlxG.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseEvent);
 			FlxG.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseEvent);
-
-			FlxG.stage.addEventListener(TouchEvent.TOUCH_BEGIN, onTouchEvent);
-			FlxG.stage.addEventListener(TouchEvent.TOUCH_MOVE, onTouchEvent);
-			FlxG.stage.addEventListener(TouchEvent.TOUCH_END, onTouchEvent);
 		}
 
 		if(ClientPrefs.data.cacheOnGPU) Paths.clearUnusedMemory();
@@ -258,29 +251,21 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	function addCharacter(reload:Bool = false)
 	{
 		var pos:Int = -1;
-		var keepAnimatedIcon:Null<Bool> = null;
 		if(character != null)
 		{
 			pos = members.indexOf(character);
-			if(reload && animatedIconCheckBox != null)
-				keepAnimatedIcon = animatedIconCheckBox.checked;
 			remove(character);
 			character.destroy();
 		}
 
 		var isPlayer = (reload ? character.isPlayer : !predictCharacterIsNotPlayer(_char));
 		character = new Character(0, 0, _char, isPlayer);
-
-		if(keepAnimatedIcon != null)
-			character.animatedIcon = keepAnimatedIcon;
-
 		if(!reload && character.editorIsPlayer != null && isPlayer != character.editorIsPlayer)
 		{
 			character.isPlayer = !character.isPlayer;
 			character.flipX = (character.originalFlipX != character.isPlayer);
+			if(check_player != null) check_player.checked = character.isPlayer;
 		}
-		if(check_player != null) check_player.checked = character.isPlayer;
-		
 		character.debugMode = true;
 		character.missingCharacter = false;
 
@@ -654,7 +639,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	var flipXCheckBox:PsychUICheckBox;
 	var noAntialiasingCheckBox:PsychUICheckBox;
-	var animatedIconCheckBox:PsychUICheckBox;
 
 	var healthColorStepperR:PsychUINumericStepper;
 	var healthColorStepperG:PsychUINumericStepper;
@@ -684,16 +668,9 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			});
 
 		healthIconInputText = new PsychUIInputText(15, imageInputText.y + 35, 75, healthIcon.getCharacter(), 8);
-			
-		animatedIconCheckBox = new PsychUICheckBox(healthIconInputText.x + 85, healthIconInputText.y + 2, "Animated Icon", 120);
-		animatedIconCheckBox.checked = character.animatedIcon == true;
-		animatedIconCheckBox.onClick = function() {
-		character.animatedIcon = animatedIconCheckBox.checked;
-		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
-	};
 
-		vocalsInputText = new PsychUIInputText(15, healthIconInputText.y + 35, 75, character.vocalsFile != null ? character.vocalsFile : '', 8);	
-			
+		vocalsInputText = new PsychUIInputText(15, healthIconInputText.y + 35, 75, character.vocalsFile != null ? character.vocalsFile : '', 8);
+
 		singDurationStepper = new PsychUINumericStepper(15, vocalsInputText.y + 45, 0.1, 4, 0, 999, 1);
 
 		scaleStepper = new PsychUINumericStepper(15, singDurationStepper.y + 40, 0.1, 1, 0.05, 10, 2);
@@ -742,7 +719,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		tab_group.add(reloadImage);
 		tab_group.add(decideIconColor);
 		tab_group.add(healthIconInputText);
-		tab_group.add(animatedIconCheckBox);
 		tab_group.add(vocalsInputText);
 		tab_group.add(singDurationStepper);
 		tab_group.add(scaleStepper);
@@ -767,7 +743,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		{
 			if(sender == healthIconInputText) {
 				var lastIcon = healthIcon.getCharacter();
-				healthIcon.changeIcon(healthIconInputText.text, false, character.animatedIcon == true);
+				healthIcon.changeIcon(healthIconInputText.text, false);
 				character.healthIcon = healthIconInputText.text;
 				if(lastIcon != healthIcon.getCharacter()) updatePresence();
 				unsavedProgress = true;
@@ -904,8 +880,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		positionYStepper.value = character.positionArray[1];
 		positionCameraXStepper.value = character.cameraPosition[0];
 		positionCameraYStepper.value = character.cameraPosition[1];
-
-		animatedIconCheckBox.checked = character.animatedIcon == true;
 		reloadAnimationDropDown();
 		updateHealthBar();
 	}
@@ -925,61 +899,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			return;
 		}
 		ClientPrefs.toggleVolumeKeys(true);
-
-		if (!ClientPrefs.data.dragCharacterToMove)
-		{
-			isDraggingChar = false;
-		}
-		else
-		{
-			if (FlxG.mouse.justPressed && !isMouseOverUI() && !controls.mobileC)
-			{
-				var mouseWorld:FlxPoint = FlxG.mouse.getWorldPosition();
-				if (character.overlapsPoint(mouseWorld))
-				{
-					isDraggingChar = true;
-					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
-					var anim = anims[curAnim];
-					if (anim != null)
-					{
-						dragStartPos[0] = character.offset.x;
-						dragStartPos[1] = character.offset.y;
-					}
-					else
-					{
-						dragStartPos[0] = 0;
-						dragStartPos[1] = 0;
-					}
-				}
-			}
-
-			if (isDraggingChar && !controls.mobileC)
-			{
-				if (FlxG.mouse.justReleased)
-				{
-					isDraggingChar = false;
-				}
-				else
-				{
-					var mouseWorld:FlxPoint = FlxG.mouse.getWorldPosition();
-					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
-					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
-
-					character.offset.x = dragStartPos[0] - deltaX;
-					character.offset.y = dragStartPos[1] - deltaY;
-
-					var anim = anims[curAnim];
-					if (anim != null && anim.offsets != null)
-					{
-						anim.offsets[0] = Std.int(character.offset.x);
-						anim.offsets[1] = Std.int(character.offset.y);
-						character.addOffset(anim.anim, character.offset.x, character.offset.y);
-						updateText();
-						unsavedProgress = true;
-					}
-				}
-			}
-		}
 
 		var shiftMult:Float = 1;
 		var ctrlMult:Float = 1;
@@ -1253,51 +1172,10 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthColorStepperG.value = character.healthColorArray[1];
 		healthColorStepperB.value = character.healthColorArray[2];
 		healthBar.leftBar.color = healthBar.rightBar.color = FlxColor.fromRGB(character.healthColorArray[0], character.healthColorArray[1], character.healthColorArray[2]);
-		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true);
+		healthIcon.changeIcon(character.healthIcon, false);
 		updatePresence();
 	}
 
-	function isMouseOverUI():Bool
-	{
-		var mouseX = FlxG.mouse.screenX;
-		var mouseY = FlxG.mouse.screenY;
-
-		if (UI_box != null && UI_box.visible && UI_box.bg != null)
-		{
-			if (mouseX >= UI_box.x && mouseX <= UI_box.x + UI_box.bg.width &&
-				mouseY >= UI_box.y && mouseY <= UI_box.y + UI_box.bg.height)
-				return true;
-			
-			if (UI_characterbox != null && UI_characterbox.visible && UI_characterbox.bg != null)
-			{
-				if (mouseX >= UI_characterbox.x && mouseX <= UI_characterbox.x + UI_characterbox.bg.width &&
-					mouseY >= UI_characterbox.y && mouseY <= UI_characterbox.y + UI_characterbox.bg.height)
-					return true;
-			}
-		}
-
-		if (helpBg != null && helpBg.visible)
-		{
-			return true;
-		}
-
-		if (controls.mobileC && touchPad != null)
-		{
-			var isOverButton = false;
-			touchPad.forEachAlive(function(button:TouchButton) {
-				if (button.visible && !isOverButton)
-				{
-					if (mouseX >= button.x && mouseX <= button.x + button.width &&
-						mouseY >= button.y && mouseY <= button.y + button.height)
-						isOverButton = true;
-				}
-			});
-			return isOverButton;
-		}
-
-		return false;
-	}
-	
 	inline function updatePresence() {
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
@@ -1486,117 +1364,22 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	function onMouseEvent(e:MouseEvent):Void
 	{
-		if (!controls.mobileC || FlxG.stage == null || UI_box == null || UI_characterbox == null)
-			return;
-
-		if (isDraggingChar) return;
-
-		switch (e.type)
-		{
-			case MouseEvent.MOUSE_DOWN:
-				if (!isMouseOverUI())
-				{
-					var mouse = new Point(e.stageX, e.stageY);
+		if (touchPad != null && !touchPad.anyPressed([ANY]))
+			switch (e.type)
+			{
+				case MouseEvent.MOUSE_DOWN:
+					var mouse = new Point(e.stageX, e.stageY); // OpenFL mouse position
 					cameraPosition.x = FlxG.camera.scroll.x + mouse.x;
 					cameraPosition.y = FlxG.camera.scroll.y + mouse.y;
 					isDragging = true;
-				}
 
-			case MouseEvent.MOUSE_MOVE if (isDragging):
-				var mouse = new Point(e.stageX, e.stageY);
-				FlxG.camera.scroll.x = cameraPosition.x - mouse.x;
-				FlxG.camera.scroll.y = cameraPosition.y - mouse.y;
+				case MouseEvent.MOUSE_MOVE if (isDragging):
+					var mouse = new Point(e.stageX, e.stageY);
+					FlxG.camera.scroll.x = cameraPosition.x - mouse.x;
+					FlxG.camera.scroll.y = cameraPosition.y - mouse.y;
 
-			case MouseEvent.MOUSE_UP:
-				isDragging = false;
-		}
-    }
-
-	function getWorldFromScreen(screenX:Float, screenY:Float):FlxPoint 
-	{
-		var cam = FlxG.camera;
-		return FlxPoint.get(
-			(screenX - cam.x) / cam.zoom + cam.scroll.x,
-			(screenY - cam.y) / cam.zoom + cam.scroll.y
-		);
-	}
-
-	function onTouchEvent(e:TouchEvent):Void 
-	{
-		if (!controls.mobileC || FlxG.stage == null)
-			return;
-
-		if (!ClientPrefs.data.dragCharacterToMove)
-		{
-			isDraggingChar = false;
-			return;
-		}
-
-		var touchX:Float = e.stageX;
-		var touchY:Float = e.stageY;
-
-		switch (e.type) {
-			case TouchEvent.TOUCH_BEGIN:
-				var mouseWorld = getWorldFromScreen(touchX, touchY);
-				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI()) {
-					isDraggingChar = true;
-					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
-					var anim = anims[curAnim];
-					if (anim != null)
-					{
-						dragStartPos[0] = character.offset.x;
-						dragStartPos[1] = character.offset.y;
-					}
-					else
-					{
-						dragStartPos[0] = 0;
-						dragStartPos[1] = 0;
-					}
-				}
-				mouseWorld.put();
-
-			case TouchEvent.TOUCH_MOVE:
-				if (isDraggingChar) {
-					var mouseWorld = getWorldFromScreen(touchX, touchY);
-					var deltaX = mouseWorld.x - dragStartTouch.x;
-					var deltaY = mouseWorld.y - dragStartTouch.y;
-
-					character.offset.x = dragStartPos[0] - deltaX;
-					character.offset.y = dragStartPos[1] - deltaY;
-
-					var anim = anims[curAnim];
-					if (anim != null && anim.offsets != null)
-					{
-						anim.offsets[0] = Std.int(character.offset.x);
-						anim.offsets[1] = Std.int(character.offset.y);
-						character.addOffset(anim.anim, character.offset.x, character.offset.y);
-						updateText();
-						unsavedProgress = true;
-					}
-					mouseWorld.put();
-				}
-
-			case TouchEvent.TOUCH_END:
-				isDraggingChar = false;
-		}
-	}
-
-	override function destroy()
-	{
-		if (controls.mobileC && FlxG.stage != null)
-		{
-			FlxG.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseEvent);
-			FlxG.stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseEvent);
-			FlxG.stage.removeEventListener(MouseEvent.MOUSE_UP, onMouseEvent);
-
-			FlxG.stage.removeEventListener(TouchEvent.TOUCH_BEGIN, onTouchEvent);
-			FlxG.stage.removeEventListener(TouchEvent.TOUCH_MOVE, onTouchEvent);
-			FlxG.stage.removeEventListener(TouchEvent.TOUCH_END, onTouchEvent);
-		}
-
-		if (dragStartTouch != null) dragStartTouch.put();
-		isDragging = false;
-		isDraggingChar = false;
-		super.destroy();
+				case MouseEvent.MOUSE_UP:
+					isDragging = false;
+			}
 	}
 }

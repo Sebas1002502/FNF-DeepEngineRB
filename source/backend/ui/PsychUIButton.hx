@@ -1,7 +1,6 @@
 package backend.ui;
 
 import backend.ui.PsychUIBox.UIStyleData;
-import options.OptionsMenuTheme;
 
 class PsychUIButton extends FlxSpriteGroup
 {
@@ -34,11 +33,10 @@ class PsychUIButton extends FlxSpriteGroup
 	public function new(x:Float = 0, y:Float = 0, label:String = '', ?onClick:Void->Void = null, ?wid:Int = 80, ?hei:Int = 20)
 	{
 		super(x, y);
-		refreshStyles();
 		bg = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		add(bg);
-		bg.color = normalStyle.bgColor;
-		bg.alpha = normalStyle.bgAlpha;
+		bg.color = 0xFFAAAAAA;
+		bg.alpha = 0.6;
 
 		text = new FlxText(0, 0, 1, '');
 		text.alignment = CENTER;
@@ -48,25 +46,6 @@ class PsychUIButton extends FlxSpriteGroup
 		
 		this.onClick = onClick;
 		forceCheckNext = true;
-	}
-
-	function refreshStyles():Void
-	{
-		clickStyle = {
-			bgColor: OptionsMenuTheme.current().accent,
-			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.current().accent),
-			bgAlpha: 1
-		};
-		hoverStyle = {
-			bgColor: OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, false),
-			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, false)),
-			bgAlpha: 1
-		};
-		normalStyle = {
-			bgColor: OptionsMenuTheme.cardFill(false),
-			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)),
-			bgAlpha: OptionsMenuTheme.isDark() ? 0.92 : 0.98
-		};
 	}
 
 	public var isClicked:Bool = false;

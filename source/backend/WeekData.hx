@@ -1,7 +1,7 @@
 package backend;
 
-import backend.AssetLoader;
-import openfl.utils.AssetType;
+import lime.utils.Assets;
+import openfl.utils.Assets as OpenFlAssets;
 import haxe.Json;
 
 typedef WeekFile =
@@ -23,7 +23,6 @@ typedef WeekFile =
 class WeekData {
 	public static var weeksLoaded:Map<String, WeekData> = new Map<String, WeekData>();
 	public static var weeksList:Array<String> = [];
-	static var weekFileCache:Map<String, WeekFile> = new Map();
 	public var folder:String = '';
 
 	// JSON variables
@@ -89,7 +88,6 @@ class WeekData {
 
 		var sexList:Array<String> = CoolUtil.coolTextFile(Paths.getSharedPath('weeks/weekList.txt'));
 		for (i in 0...sexList.length) {
-			if(sexList[i] == null || sexList[i].length == 0) continue;
 			for (j in 0...directories.length) {
 				var fileToCheck:String = directories[j] + 'weeks/' + sexList[i] + '.json';
 				if(!weeksLoaded.exists(sexList[i])) {
@@ -115,13 +113,12 @@ class WeekData {
 		#if MODS_ALLOWED
 		for (i in 0...directories.length) {
 			var directory:String = directories[i] + 'weeks/';
-			if(Paths.safeModIsDirectory(directory)) {
+			if(FileSystem.exists(directory)) {
 				var listOfWeeks:Array<String> = CoolUtil.coolTextFile(directory + 'weekList.txt');
 				for (daWeek in listOfWeeks)
 				{
-					if(daWeek == null || daWeek.length == 0) continue;
 					var path:String = directory + daWeek + '.json';
-					if(AssetLoader.exists(path, TEXT))
+					if(FileSystem.exists(path))
 					{
 						addWeek(daWeek, path, directories[i], i, originalLength);
 					}
@@ -130,7 +127,7 @@ class WeekData {
 				for (file in Paths.readDirectory(directory))
 				{
 					var path = haxe.io.Path.join([directory, file]);
-					if (!Paths.safeModIsDirectory(path) && file.endsWith('.json'))
+					if (!FileSystem.isDirectory(path) && file.endsWith('.json'))
 					{
 						addWeek(file.substr(0, file.length - 5), path, directories[i], i, originalLength);
 					}
@@ -164,30 +161,21 @@ class WeekData {
 	}
 
 	private static function getWeekFile(path:String):WeekFile {
-		if(weekFileCache.exists(path))
-			return weekFileCache.get(path);
-
-		var rawJson:String = AssetLoader.loadText(path);
+		var rawJson:String = null;
+		#if MODS_ALLOWED
+		if(FileSystem.exists(path)) {
+			rawJson = File.getContent(path);
+		}
+		#else
+		if(OpenFlAssets.exists(path)) {
+			rawJson = Assets.getText(path);
+		}
+		#end
 
 		if(rawJson != null && rawJson.length > 0) {
-			try
-			{
-				var parsed:WeekFile = cast tjson.TJSON.parse(rawJson);
-				if(parsed != null)
-					weekFileCache.set(path, parsed);
-				return parsed;
-			}
-			catch(e:Dynamic)
-			{
-				trace('Failed to parse week file "$path": $e');
-			}
+			return cast tjson.TJSON.parse(rawJson);
 		}
 		return null;
-	}
-
-	public static function clearCache():Void
-	{
-		weekFileCache.clear();
 	}
 
 	//   FUNCTIONS YOU WILL PROBABLY NEVER NEED TO USE
