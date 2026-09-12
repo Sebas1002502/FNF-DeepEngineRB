@@ -237,7 +237,7 @@ You need to have:
   ## How to compile it
   install git https://git-scm.com/install/windows
   First install haxe 4.2.7 serious stop using haxe 4.2.5
-  install visual studio build here for install https://aka.ms/vs/stable/vs_BuildTools.exe how this
+  install visual studio build tools here for install https://aka.ms/vs/stable/vs_BuildTools.exe how this
   
   <img width="1263" height="687" alt="image" src="https://github.com/user-attachments/assets/6b137ac4-5258-4b7b-a463-f831639f8b43" />
 
