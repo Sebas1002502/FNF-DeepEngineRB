@@ -23,7 +23,7 @@ class WindowsAPI
 	static var closingTween:NumTween;
 	static var isClosing:Bool = false;
 	static var windowBorderColorTween:NumTween;
-	
+
 	@:noPrivateAccess
 	private static var _windowsWallpaperPath:String = null;
 	public static var changedWallpaper:Bool = false;
@@ -109,7 +109,7 @@ class WindowsAPI
 				Sys.exit(exitCode);
 			}
 		});
-		
+
 		tween.onUpdate = function(twn:FlxTween)
 		{
 			setWindowOppacity(tween.value);
@@ -326,7 +326,8 @@ class WindowsAPI
 	public static function sendWindowsNotification(desc:String, title:String):Void
 	{
 		#if windows
-		if (getWindowsVersion() < 8) return;
+		if (getWindowsVersion() < 8)
+			return;
 
 		var powershellCommand = "powershell -Command \"& {$ErrorActionPreference = 'Stop';"
 			+ "$title = '"
@@ -647,6 +648,8 @@ class WindowsAPI
 	public static function initGDIThread():Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed())
+			return;
 		WinGDIThread.initWindowsGDIThread();
 		#else
 		trace("GDI effects are only available on Windows");
@@ -672,6 +675,8 @@ class WindowsAPI
 	public static function pauseGDIThread(pause:Bool):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed() && !pause)
+			return;
 		WinGDIThread.temporarilyPaused = pause;
 		#else
 		trace("GDI effects are only available on Windows");
@@ -714,6 +719,8 @@ class WindowsAPI
 	public static function prepareGDIEffect(effect:String, wait:Float = 0):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed())
+			return;
 		SlushiWinGDI.prepareGDIEffect(effect, wait);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -728,6 +735,8 @@ class WindowsAPI
 	public static function enableGDIEffect(effect:String, enabled:Bool = true):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed())
+			return;
 		SlushiWinGDI.enableGDIEffect(effect, enabled);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -741,6 +750,8 @@ class WindowsAPI
 	public static function removeGDIEffect(effect:String):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed())
+			return;
 		SlushiWinGDI.removeGDIEffect(effect);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -755,6 +766,8 @@ class WindowsAPI
 	public static function setGDIEffectWaitTime(effect:String, wait:Float):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed())
+			return;
 		SlushiWinGDI.setGDIEffectWaitTime(effect, wait);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -768,9 +781,12 @@ class WindowsAPI
 	public static function setGDIElapsedTime(elapsed:Float):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed())
+			return;
 		SlushiWinGDI.setElapsedTime(elapsed);
 		#else
 		trace("GDI effects are only available on Windows");
 		#end
 	}
 }
+

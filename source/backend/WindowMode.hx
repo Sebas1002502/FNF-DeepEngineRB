@@ -36,11 +36,54 @@ class WindowMode
 		#end
 	}
 
+	public static function reapplyFullscreenPreference():Void
+	{
+		#if desktop
+		if (!isFullscreen())
+			return;
+
+		forceWindowed();
+		applyFullscreenPreference(true);
+		#end
+	}
+
+	static function forceWindowed():Void
+	{
+		#if desktop
+		var window = Lib.current.stage.window;
+		if (window == null)
+			return;
+
+		try
+		{
+			window.fullscreen = false;
+		}
+		catch (_:Dynamic)
+		{
+		}
+		window.borderless = false;
+
+		exclusiveFullscreen = false;
+		borderlessFullscreen = false;
+
+		if (hasWindowedState && lastWindowedW > 0 && lastWindowedH > 0)
+		{
+			window.resize(lastWindowedW, lastWindowedH);
+			window.x = lastWindowedX;
+			window.y = lastWindowedY;
+		}
+
+		ClientPrefs.applyFramePacing();
+		RenderInterpolation.syncAllCameras();
+		#end
+	}
+
 	public static function setExclusiveFullscreen(enable:Bool):Void
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
 		if (enable)
 		{
@@ -59,9 +102,13 @@ class WindowMode
 				borderlessFullscreen = false;
 			}
 
-			try {
+			try
+			{
 				window.fullscreen = true;
-			} catch (_:Dynamic) {}
+			}
+			catch (_:Dynamic)
+			{
+			}
 		}
 		else
 		{
@@ -84,7 +131,8 @@ class WindowMode
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
 		if (enable)
 		{
@@ -99,18 +147,26 @@ class WindowMode
 
 			if (exclusiveFullscreen)
 			{
-				try {
+				try
+				{
 					window.fullscreen = false;
-				} catch (_:Dynamic) {}
+				}
+				catch (_:Dynamic)
+				{
+				}
 				exclusiveFullscreen = false;
 			}
 
-			// Keep this mode as a regular bordered window (dev behavior).
-			// Borderless Fix is the one that becomes true borderless fullscreen.
-			try {
+			// Performance fullscreen: keep the backbuffer capped for shader-heavy songs.
+			// Borderless Fix uses the native monitor resolution.
+			try
+			{
 				window.fullscreen = false;
-			} catch (_:Dynamic) {}
-			window.borderless = false;
+			}
+			catch (_:Dynamic)
+			{
+			}
+			window.borderless = true;
 
 			var screenW = Std.int(Capabilities.screenResolutionX);
 			var screenH = Std.int(Capabilities.screenResolutionY);
@@ -142,7 +198,8 @@ class WindowMode
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
 		if (enable)
 		{
@@ -157,15 +214,23 @@ class WindowMode
 
 			if (exclusiveFullscreen)
 			{
-				try {
+				try
+				{
 					window.fullscreen = false;
-				} catch (_:Dynamic) {}
+				}
+				catch (_:Dynamic)
+				{
+				}
 				exclusiveFullscreen = false;
 			}
 
-			try {
+			try
+			{
 				window.fullscreen = false;
-			} catch (_:Dynamic) {}
+			}
+			catch (_:Dynamic)
+			{
+			}
 			window.borderless = true;
 
 			var screenW = Std.int(Capabilities.screenResolutionX);
@@ -201,3 +266,4 @@ class WindowMode
 		}
 	}
 }
+

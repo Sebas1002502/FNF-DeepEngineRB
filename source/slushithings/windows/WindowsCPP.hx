@@ -1085,3 +1085,4 @@ enum abstract MessageBoxIcon(Int)
 	var MSG_WARNING = 0x00000030;
 	var MSG_INFORMATION = 0x00000040;
 }
+

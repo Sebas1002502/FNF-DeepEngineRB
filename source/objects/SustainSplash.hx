@@ -10,6 +10,8 @@ class SustainSplash extends FlxSprite
 
 	public var strumNote:StrumNote;
 
+	var colorSwap:ColorSwap;
+
 	var timer:FlxTimer;
 
 	public function new():Void
@@ -33,7 +35,8 @@ class SustainSplash extends FlxSprite
 			}
 			animation.addByPrefix('hold', 'holdCover0', 24, true);
 			animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
-			if(!animation.getNameList().contains("hold")) trace("Hold splash is missing 'hold' anim!");
+			if (!animation.getNameList().contains("hold"))
+				trace("Hold splash is missing 'hold' anim!");
 		}
 		else
 		{
@@ -51,7 +54,7 @@ class SustainSplash extends FlxSprite
 
 	function getHoldCoverPath():String
 	{
-		if(!ClientPrefs.data.noteRGB)
+		if (!ClientPrefs.data.noteRGB)
 		{
 			var noRgbCandidates:Array<String> = [
 				'holdCoversNoRGB/holdCover-Purple',
@@ -59,7 +62,7 @@ class SustainSplash extends FlxSprite
 				'holdCoversNoRGB/holdCover-Green',
 				'holdCoversNoRGB/holdCover-Red'
 			];
-			for(path in noRgbCandidates)
+			for (path in noRgbCandidates)
 				if (Paths.fileExists('images/$path.png', IMAGE) && Paths.fileExists('images/$path.xml', TEXT))
 					return path;
 		}
@@ -74,10 +77,13 @@ class SustainSplash extends FlxSprite
 		{
 			setPosition(strumNote.x, strumNote.y);
 
-			if (ClientPrefs.data.hideSustainSplash) {
+			if (ClientPrefs.data.hideSustainSplash)
+			{
 				visible = false;
 				alpha = 0;
-			} else {
+			}
+			else
+			{
 				visible = strumNote.visible;
 				alpha = 1;
 			}
@@ -92,7 +98,8 @@ class SustainSplash extends FlxSprite
 
 	public function setupSusSplash(strum:StrumNote, daNote:Note, ?playbackRate:Float = 1):Void
 	{
-		if (ClientPrefs.data.hideSustainSplash) {
+		if (ClientPrefs.data.hideSustainSplash)
+		{
 			visible = false;
 			alpha = 0;
 			kill();
@@ -113,7 +120,14 @@ class SustainSplash extends FlxSprite
 		}
 		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 
-		if (daNote.shader != null)
+		if (!ClientPrefs.data.noteRGB)
+		{
+			if (colorSwap == null)
+				colorSwap = new ColorSwap();
+			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
+			shader = colorSwap.shader;
+		}
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
 		{
 			shader = new objects.NoteSplash.PixelSplashShaderRef().shader;
 			shader.data.r.value = daNote.shader.data.r.value;
@@ -121,6 +135,8 @@ class SustainSplash extends FlxSprite
 			shader.data.b.value = daNote.shader.data.b.value;
 			shader.data.mult.value = daNote.shader.data.mult.value;
 		}
+		else
+			shader = null;
 
 		strumNote = strum;
 		alpha = 1;
@@ -152,3 +168,4 @@ class SustainSplash extends FlxSprite
 			});
 	}
 }
+

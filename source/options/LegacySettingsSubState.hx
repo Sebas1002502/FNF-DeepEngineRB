@@ -7,38 +7,51 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		title = Language.getPhrase('legacy_menu', 'Legacy Settings');
 		rpcTitle = 'Legacy Settings Menu';
 
-		var option:Option = new Option('Use Psych Score Text',
-			'If checked, keeps the original Psych Engine score text format during gameplay.',
-			'usePsychScoreText',
-			BOOL);
+		var option:Option = new Option('Use Psych Score Text', 'If checked, keeps the original Psych Engine score text format during gameplay.',
+			'usePsychScoreText', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Legacy Memory Management',
-			'If checked, keeps more cached assets around like older Psych versions. Safer for old mods, heavier on RAM.',
-			'legacyMemoryManagement',
-			BOOL);
+		var option:Option = new Option('Vanilla Transition', 'If checked, uses the vanilla Psych Engine transition instead of the custom one.',
+			'vanillaTransition', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Legacy File System Access',
-			'If checked, prefers raw filesystem reads for directory scans and old mod layouts.',
-			'legacyFileSystemAccess',
-			BOOL);
+		var option:Option = new Option('Instant Window Close', 'If checked, closing the game exits instantly instead of fading the window out.',
+			'instantWindowClose', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Legacy Shader Init',
-			'If checked, keeps shader setup closer to old Psych behavior instead of auto-adapting shader code.',
-			'legacyShaderInit',
-			BOOL);
+		var option:Option = new Option('Use Psych Freeplay', 'If checked, uses the classic Psych Engine Freeplay state instead of the PlusEngine Freeplay.',
+			'usePsychFreeplay', BOOL);
 		addOption(option);
 
-		#if !mobile
-		var option:Option = new Option('Scriptable Custom States',
-			'If checked, lets mods override states through ScriptableState and CustomState.',
-			'useScriptableCustomStates',
-			BOOL);
+		var option:Option = new Option('Script Deprecation Warnings',
+			'If checked, deprecated Lua/HScript compatibility APIs will print warnings to the debug console. Disable to silence noisy mods.',
+			'scriptDeprecationWarnings', BOOL);
+		addOption(option);
+
+		#if MODS_ALLOWED
+		var option:Option = new Option('Mod Security',
+			'If checked, scans mod Lua/HScript and skips scripts from mods with untrusted sensitive APIs.', 'modSecurityEnabled', BOOL);
+		option.onChange = function()
+		{
+			ClientPrefs.saveSettings();
+			backend.ModSecurity.rescanAll();
+		};
 		addOption(option);
 		#end
+
+		var option:Option = new Option('Drag Character To Move',
+			'If checked, the character position can be dragged with the cursor, just like in Codename Engine.', 'dragCharacterToMove', BOOL);
+		option.onChange = function()
+		{
+			ClientPrefs.saveSettings();
+		};
+		addOption(option);
+
+		var option:Option = new Option('Results State at End', 'If unchecked, endSong will not transition to ResultsState in Freeplay/Story Mode.',
+			'resultsStateAtEnd', BOOL);
+		addOption(option);
 
 		super();
 	}
 }
+

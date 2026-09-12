@@ -3,7 +3,8 @@ package options;
 import flixel.util.FlxColor;
 import backend.ui.md3.MD3Theme;
 
-typedef OptionsAccentPalette = {
+typedef OptionsAccentPalette =
+{
 	var name:String;
 	var accent:Int;
 	var strong:Int;
@@ -153,7 +154,7 @@ class OptionsMenuTheme
 
 	public static inline function menuBackgroundAlpha():Float
 	{
-		return isDark() ? 0.08 : 0.14;
+		return 0.34;
 	}
 
 	public static inline function panelSurfaceColor():Int
@@ -252,9 +253,7 @@ class OptionsMenuTheme
 
 	public static inline function gridAccentColor():Int
 	{
-		return isDark()
-			? blendColor(current().accent, 0xFFE2E8F0, 0.30)
-			: blendColor(current().accent, 0xFFFFFFFF, 0.20);
+		return isDark() ? blendColor(current().accent, 0xFFE2E8F0, 0.30) : blendColor(current().accent, 0xFFFFFFFF, 0.20);
 	}
 
 	public static inline function loadingOverlayPanelColor():Int
@@ -302,3 +301,4 @@ class OptionsMenuTheme
 		return isDark() ? (selected ? bodyTextColor() : 0xFF99A1AE) : (selected ? current().muted : 0xFF7E6F95);
 	}
 }
+
