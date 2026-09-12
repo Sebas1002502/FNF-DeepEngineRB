@@ -234,5 +234,18 @@ You need to have:
 * You can listen to a song or adjust Scroll Speed/Damage taken/etc. on Freeplay by pressing Space.
 * You can enable "Combo Stacking" in Gameplay Options. This causes the combo sprites to just be one sprite with an animation rather than sprites spawning each note hit.
 
+  ## How to compile it
+  install git https://git-scm.com/install/windows
+  First install haxe 4.2.7 serious stop using haxe 4.2.5
+  install visual studio build here for install https://aka.ms/vs/stable/vs_BuildTools.exe how this
+  
+  <img width="1263" height="687" alt="image" src="https://github.com/user-attachments/assets/6b137ac4-5258-4b7b-a463-f831639f8b43" />
+
+  now download the engine code in this command git clone https://github.com/Sebas1002502/FNF-DeepEngineRB.git
+  uses the setup.bat if windows or linux unish-lib.sh for linux
+  and in the terminal type lime test windows -Dofficial
+  and only this wait and see the engine ¨created for you¨ are running bye. 
 
 #### Psych Engine by ShadowMario, Friday Night Funkin' by ninjamuffin99
+
+
