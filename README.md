@@ -244,7 +244,7 @@ You need to have:
   now download the engine code in this command git clone https://github.com/Sebas1002502/FNF-DeepEngineRB.git
   uses the setup.bat if windows or linux unish-lib.sh for linux
   and in the terminal type lime test windows -Dofficial
-  and only this wait and see the engine ¨created for you¨ are running bye. 
+  and only this wait and see the engine are running with no errors bye. 
 
 #### Psych Engine by ShadowMario, Friday Night Funkin' by ninjamuffin99
 
