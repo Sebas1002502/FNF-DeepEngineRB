@@ -274,8 +274,10 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 
 		wavePhase += elapsed * WAVE_SPEED * TAU;
 		sweepPhase += elapsed * SWEEP_SPEED;
-		if (wavePhase > TAU) wavePhase -= TAU;
-		if (sweepPhase > 1000) sweepPhase = 0;
+		if (wavePhase > TAU)
+			wavePhase -= TAU;
+		if (sweepPhase > 1000)
+			sweepPhase = 0;
 		redrawIndicator();
 	}
 
@@ -385,3 +387,4 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 		redrawIndicatorTrack();
 	}
 }
+

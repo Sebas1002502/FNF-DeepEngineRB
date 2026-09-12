@@ -280,3 +280,4 @@ class MaterialVolumeTray extends Sprite
 		return value < min ? min : (value > max ? max : value);
 	}
 }
+

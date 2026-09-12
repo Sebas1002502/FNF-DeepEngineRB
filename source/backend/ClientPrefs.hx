@@ -3,12 +3,11 @@ package backend;
 import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
-//import funkin.cloud.GoogleCloudSyncNotifier;
-
 import states.TitleState;
 
 // Add a variable here and it will get automatically saved
-@:structInit class SaveVariables {
+@:structInit class SaveVariables
+{
 	// Mobile and Mobile Controls Releated
 	public var extraButtons:String = "NONE"; // mobile extra button option
 	public var hitboxPos:Bool = true; // hitbox extra button position option
@@ -26,8 +25,19 @@ import states.TitleState;
 	public var hitboxType:String = "Gradient";
 	public var popUpRating:Bool = true;
 	public var versionTextOnGameplay:Bool = false;
+	public var vsliceNaughtyness:Bool = true;
+	public var vsliceSubtitles:Bool = true;
+	public var vsliceStrumlineBackgroundOpacity:Int = 0;
+	public var vsliceScreenshotHideMouse:Bool = true;
+	public var vsliceScreenshotFancyPreview:Bool = true;
+	public var vsliceScreenshotPreviewOnSave:Bool = true;
+	public var vsliceAutoFullscreen:Bool = false;
+	public var vsliceHapticsMode:String = "All";
+	public var vsliceHapticsIntensity:Float = 1;
 	public var gameOverVibration:Bool = false;
-	public var fpsRework:Bool = true;
+	public var fpsRework:Bool = false;
+	public var framerateMode:String = 'Psych';
+	public var uncapFramerate:Bool = false;
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
@@ -44,6 +54,7 @@ import states.TitleState;
 	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
+	public var instantWindowClose:Bool = true;
 	public var antialiasing:Bool = true;
 	#if windows
 	public var changeWindowBorderColorWithNoteHit:Bool = false; // Changes window border color on note hit (Windows 11 only)
@@ -70,11 +81,13 @@ import states.TitleState;
 	public var showRating:Bool = true;
 	public var showCombo:Bool = true;
 	public var showComboNum:Bool = true;
+	public var showEarlyLateSprites:Bool = false;
+	public var showHitMs:Bool = false;
 	public var comboInGame:Bool = false;
 	public var useFreakyFont:Bool = false;
 	public var showStateInFPS:Bool = true;
 	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
-	public var endCountdownSeconds:Int = 10;  // End countdown seconds (10-30)
+	public var endCountdownSeconds:Int = 10; // End countdown seconds (10-30)
 	public var camera3dEnabled:Bool = true; // Enables 3D camera transformations
 	public var zScale:Float = 1.0; // Z-axis depth scale (0.1-5.0)
 	public var renderArrowPaths:Bool = false; // Renders arrow trajectory lines (performance intensive)
@@ -86,24 +99,22 @@ import states.TitleState;
 	public var holdCacheEnabled:Bool = true; // Hold graphics cache for performance
 	public var holdAlphaDivisions:Int = 20; // Pre-calculated alpha variants (10-30)
 	public var columnSpecificModifiers:Bool = true; // Enables per-lane modifier calculations
-	
+	public var modchartDebug:Bool = false; // Shows the NotITG-style modchart debug overlay
+
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
 		[0xFFC24B99, 0xFFFFFFFF, 0xFF3C1F56],
 		[0xFF00FFFF, 0xFFFFFFFF, 0xFF1542B7],
 		[0xFF12FA05, 0xFFFFFFFF, 0xFF0A4447],
-		[0xFFF9393F, 0xFFFFFFFF, 0xFF651038]];
+		[0xFFF9393F, 0xFFFFFFFF, 0xFF651038]
+	];
 	public var arrowRGBPixel:Array<Array<FlxColor>> = [
 		[0xFFE276FF, 0xFFFFF9FF, 0xFF60008D],
 		[0xFF3DCAFF, 0xFFF4FFFF, 0xFF003060],
 		[0xFF71E300, 0xFFF6FFE6, 0xFF003100],
-		[0xFFFF884E, 0xFFFFFAF5, 0xFF6C0000]];
-	public var arrowHSV:Array<Array<Float>> = [
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0]
+		[0xFFFF884E, 0xFFFFFAF5, 0xFF6C0000]
 	];
+	public var arrowHSV:Array<Array<Float>> = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
 
 	public var ghostTapping:Bool = true;
 	public var timeBarType:String = 'Time Left';
@@ -114,7 +125,6 @@ import states.TitleState;
 	public var noReset:Bool = false;
 	public var healthBarAlpha:Float = 1;
 	public var smoothHealthBar:Bool = true;
-	public var smoothHPBug:Bool = false;
 	public var usePsychScoreText:Bool = true;
 	public var hitsoundVolume:Float = 0;
 	public var hitSounds:String = "None";
@@ -125,7 +135,7 @@ import states.TitleState;
 	public var enablePreloader:Bool = false; // Enable global asset preloader on startup
 	public var gameplaySettings:Map<String, Dynamic> = [
 		'scrollspeed' => 1.0,
-		'scrolltype' => 'multiplicative', 
+		'scrolltype' => 'multiplicative',
 		// anyone reading this, amod is multiplicative speed mod, cmod is constant speed mod, and xmod is bpm based speed mod.
 		// an amod example would be chartSpeed * multiplier
 		// cmod would just be constantSpeed = chartSpeed
@@ -149,10 +159,11 @@ import states.TitleState;
 	];
 
 	public var comboOffset:Array<Int> = [0, 0, 0, 0];
+	public var hitMsOffset:Array<Int> = [0, 0];
 	public var keyViewerOffset:Array<Int> = [0, 0]; // X, Y offset for key viewer
 	public var keyViewerColor:String = 'Gray'; // Color name for key viewer
 	public var ratingOffset:Int = 0;
-	public var flawlessRating:Bool = true;
+	public var useFlawlessRating:Bool = false;
 	public var flawlessWindow:Float = 20.0;
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;
@@ -188,83 +199,89 @@ import states.TitleState;
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var disableLargeChartGC:Bool = false; // Skip manual GC pass for large charts to reduce loading stutters
-	public var legacyMemoryManagement:Bool = false; // Use Psych 0.7.3 memory management style (no GPU disposal)
-	public var legacyFileSystemAccess:Bool = false; // Allow direct FileSystem.readDirectory access like in Psych 0.7.3
-	public var legacyShaderInit:Bool = false; // Use Psych 0.7.3 shader initialization (glslVersion parameter, direct FlxRuntimeShader)
-	public var autoConvertChartsToV2:Bool = false; // Automatically convert psych_v1 charts to psych_v2 format when loading
-	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
+	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
+	public var scriptDeprecationWarnings:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs
+	public var modSecurityEnabled:Bool = true; // Scan mod Lua/HScript before allowing sensitive APIs to run
+	public var modSecurityChecks:Map<String, Bool> = new Map();
+	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine
 }
 
-class ClientPrefs {
+class ClientPrefs
+{
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
+	public static var globalAntialiasing(get, set):Bool;
 	public static var judgementCounter:Bool = false;
+	public static inline var FRAMERATE_MAX:Int = 240;
+	public static inline var FRAMERATE_UNCAPPED:Int = 1000;
+	public static final FRAMERATE_MODES:Array<String> = ['Psych', 'Fixed', 'Interpolated'];
 
-	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
+	// Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
-		//Key Bind, Name for ControlsSubState
-		'note_up'		=> [W, UP],
-		'note_left'		=> [A, LEFT],
-		'note_down'		=> [S, DOWN],
-		'note_right'	=> [D, RIGHT],
-		
-		'ui_up'			=> [W, UP],
-		'ui_left'		=> [A, LEFT],
-		'ui_down'		=> [S, DOWN],
-		'ui_right'		=> [D, RIGHT],
-		
-		'accept'		=> [SPACE, ENTER],
-		'back'			=> [BACKSPACE, ESCAPE],
-		'pause'			=> [ENTER, ESCAPE],
-		'reset'			=> [R],
-		
-		'volume_mute'	=> [ZERO],
-		'volume_up'		=> [NUMPADPLUS, PLUS],
-		'volume_down'	=> [NUMPADMINUS, MINUS],
-		
-		'debug_1'		=> [SEVEN],
-		'debug_2'		=> [EIGHT],
-		'debug_3'		=> [SIX],
-		
-		'fullscreen'	=> [F11]
+		// Key Bind, Name for ControlsSubState
+		'note_up' => [W, UP],
+		'note_left' => [A, LEFT],
+		'note_down' => [S, DOWN],
+		'note_right' => [D, RIGHT],
+		'ui_up' => [W, UP],
+		'ui_left' => [A, LEFT],
+		'ui_down' => [S, DOWN],
+		'ui_right' => [D, RIGHT],
+		'accept' => [SPACE, ENTER],
+		'back' => [BACKSPACE, ESCAPE],
+		'pause' => [ENTER, ESCAPE],
+		'reset' => [R],
+		'volume_mute' => [ZERO],
+		'volume_up' => [NUMPADPLUS, PLUS],
+		'volume_down' => [NUMPADMINUS, MINUS],
+		'debug_1' => [SEVEN],
+		'debug_2' => [EIGHT],
+		'debug_3' => [SIX],
+		'fullscreen' => [F11]
 	];
 	public static var gamepadBinds:Map<String, Array<FlxGamepadInputID>> = [
-		'note_up'		=> [DPAD_UP, Y],
-		'note_left'		=> [DPAD_LEFT, X],
-		'note_down'		=> [DPAD_DOWN, A],
-		'note_right'	=> [DPAD_RIGHT, B],
-		
-		'ui_up'			=> [DPAD_UP, LEFT_STICK_DIGITAL_UP],
-		'ui_left'		=> [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
-		'ui_down'		=> [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN],
-		'ui_right'		=> [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
-		
-		'accept'		=> [A, START],
-		'back'			=> [B],
-		'pause'			=> [START],
-		'reset'			=> [BACK]
+		'note_up' => [DPAD_UP, Y],
+		'note_left' => [DPAD_LEFT, X],
+		'note_down' => [DPAD_DOWN, A],
+		'note_right' => [DPAD_RIGHT, B],
+		'ui_up' => [DPAD_UP, LEFT_STICK_DIGITAL_UP],
+		'ui_left' => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
+		'ui_down' => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN],
+		'ui_right' => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
+		'accept' => [A, START],
+		'back' => [B],
+		'pause' => [START],
+		'reset' => [BACK]
 	];
 	public static var mobileBinds:Map<String, Array<MobileInputID>> = [
-		'note_up'		=> [NOTE_UP],
-		'note_left'		=> [NOTE_LEFT],
-		'note_down'		=> [NOTE_DOWN],
-		'note_right'	=> [NOTE_RIGHT],
-
-		'ui_up'			=> [UP],
-		'ui_left'		=> [LEFT],
-		'ui_down'		=> [DOWN],
-		'ui_right'		=> [RIGHT],
-
-		'accept'		=> [A],
-		'back'			=> [B],
-		'pause'			=> [#if android NONE #else P #end],
-		'reset'			=> [NONE]
+		'note_up' => [NOTE_UP],
+		'note_left' => [NOTE_LEFT],
+		'note_down' => [NOTE_DOWN],
+		'note_right' => [NOTE_RIGHT],
+		'ui_up' => [UP],
+		'ui_left' => [LEFT],
+		'ui_down' => [DOWN],
+		'ui_right' => [RIGHT],
+		'accept' => [A],
+		'back' => [B],
+		'pause' => [#if android NONE #else P #end],
+		'reset' => [NONE]
 	];
 	public static var defaultKeys:Map<String, Array<FlxKey>> = null;
 	public static var defaultButtons:Map<String, Array<FlxGamepadInputID>> = null;
 	public static var defaultMobileBinds:Map<String, Array<MobileInputID>> = null;
 	static var controlsSaveCache:FlxSave = null;
+
+	static function get_globalAntialiasing():Bool
+	{
+		return data.antialiasing;
+	}
+
+	static function set_globalAntialiasing(value:Bool):Bool
+	{
+		data.antialiasing = value;
+		return value;
+	}
 
 	static function getControlsSave():FlxSave
 	{
@@ -276,16 +293,16 @@ class ClientPrefs {
 		return controlsSaveCache;
 	}
 
-	public static function resetKeys(controller:Null<Bool> = null) //Null = both, False = Keyboard, True = Controller
+	public static function resetKeys(controller:Null<Bool> = null) // Null = both, False = Keyboard, True = Controller
 	{
-		if(controller != true)
+		if (controller != true)
 			for (key in keyBinds.keys())
-				if(defaultKeys.exists(key))
+				if (defaultKeys.exists(key))
 					keyBinds.set(key, defaultKeys.get(key).copy());
 
-		if(controller != false)
+		if (controller != false)
 			for (button in gamepadBinds.keys())
-				if(defaultButtons.exists(button))
+				if (defaultButtons.exists(button))
 					gamepadBinds.set(button, defaultButtons.get(button).copy());
 	}
 
@@ -294,9 +311,12 @@ class ClientPrefs {
 		var keyBind:Array<FlxKey> = keyBinds.get(key);
 		var gamepadBind:Array<FlxGamepadInputID> = gamepadBinds.get(key);
 		var mobileBind:Array<MobileInputID> = mobileBinds.get(key);
-		while(keyBind != null && keyBind.contains(NONE)) keyBind.remove(NONE);
-		while(gamepadBind != null && gamepadBind.contains(NONE)) gamepadBind.remove(NONE);
-		while(mobileBind != null && mobileBind.contains(NONE)) mobileBind.remove(NONE);
+		while (keyBind != null && keyBind.contains(NONE))
+			keyBind.remove(NONE);
+		while (gamepadBind != null && gamepadBind.contains(NONE))
+			gamepadBind.remove(NONE);
+		while (mobileBind != null && mobileBind.contains(NONE))
+			mobileBind.remove(NONE);
 	}
 
 	public static function loadDefaultKeys()
@@ -327,8 +347,10 @@ class ClientPrefs {
 	}
 	#end
 
-	public static function saveSettings() {
-		data.cloudLastLocalSaveAt = Date.now().toString();
+	public static function saveSettings()
+	{
+		syncThemeModeFlags();
+		normalizeFPSCounterPrefs();
 
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
@@ -339,11 +361,11 @@ class ClientPrefs {
 		StorageUtil.saveStorageTypePreference(data.storageType);
 		#end
 
-        //Wow counter =p
-        Reflect.setField(FlxG.save.data, "judgementCounter", judgementCounter);
+		// Wow counter =p
+		Reflect.setField(FlxG.save.data, "judgementCounter", judgementCounter);
 		data.judgementCounter = judgementCounter;
 
-		//Placing this in a separate save so that it can be manually deleted without removing your Score and stuff
+		// Placing this in a separate save so that it can be manually deleted without removing your Score and stuff
 		var save = getControlsSave();
 		save.data.keyboard = keyBinds;
 		save.data.gamepad = gamepadBinds;
@@ -353,31 +375,51 @@ class ClientPrefs {
 		FlxG.log.add("Settings saved!");
 	}
 
-	public static function loadPrefs() {
+	public static function loadPrefs()
+	{
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 
-		// Fixed timestep is now always enabled to keep simulation and interpolation consistent.
-		data.fpsRework = true;
-		
-		if(Main.fpsVar != null)
-			Main.fpsVar.visible = data.showFPS;
+		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
+		{
+			if (Reflect.hasField(FlxG.save.data, 'showFPS') && Reflect.field(FlxG.save.data, 'showFPS') == false)
+				data.fpsCounterMode = 'Hidden';
+			else if (Reflect.hasField(FlxG.save.data, 'fpsDebugLevel'))
+				data.fpsCounterMode = fpsModeFromLegacy(Std.int(Reflect.field(FlxG.save.data, 'fpsDebugLevel')));
+		}
+		normalizeFPSCounterPrefs();
+
+		var storedFramerateMode:Dynamic = Reflect.field(FlxG.save.data, 'framerateMode');
+		if (storedFramerateMode == null)
+			data.framerateMode = Reflect.hasField(FlxG.save.data,
+				'fpsRework') ? ((Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated') : defaultData.framerateMode;
+		else
+			data.framerateMode = Std.string(storedFramerateMode);
+		data.framerateMode = normalizeFramerateMode(data.framerateMode);
+		syncLegacyFpsReworkFlag();
+		if (!Reflect.hasField(FlxG.save.data, 'menuThemeMode'))
+			data.menuThemeMode = data.menuDarkTheme ? 'Dark' : 'Light';
+		syncThemeModeFlags();
+
+		if (Main.fpsVar != null)
+			Main.fpsVar.applyPrefs();
 
 		#if (!html5 && !switch)
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 
-		if(FlxG.save.data.framerate == null) {
+		if (FlxG.save.data.framerate == null)
+		{
 			final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 			data.framerate = Std.int(FlxMath.bound(refreshRate, 60, 240));
 		}
 		#end
 
 		if (Reflect.hasField(FlxG.save.data, "judgementCounter"))
-            judgementCounter = !!Reflect.field(FlxG.save.data, "judgementCounter");
-		    judgementCounter = data.judgementCounter;
+			judgementCounter = !!Reflect.field(FlxG.save.data, "judgementCounter");
+		judgementCounter = data.judgementCounter;
 
 		applyFramePacing();
 
@@ -393,15 +435,15 @@ class ClientPrefs {
 		}
 		#end
 
-		if(FlxG.save.data.gameplaySettings != null)
+		if (FlxG.save.data.gameplaySettings != null)
 		{
 			var savedMap:Map<String, Dynamic> = FlxG.save.data.gameplaySettings;
 			for (name => value in savedMap)
 				data.gameplaySettings.set(name, value);
 		}
-		
+
 		// flixel automatically saves your volume!
-		if(FlxG.save.data.volume != null)
+		if (FlxG.save.data.volume != null)
 			FlxG.sound.volume = FlxG.save.data.volume;
 		if (FlxG.save.data.mute != null)
 			FlxG.sound.muted = FlxG.save.data.mute;
@@ -411,24 +453,28 @@ class ClientPrefs {
 		// controls on a separate save file
 		var save:FlxSave = new FlxSave();
 		save.bind('controls_v3', CoolUtil.getSavePath());
-		if(save != null)
+		if (save != null)
 		{
-			if(save.data.keyboard != null)
+			if (save.data.keyboard != null)
 			{
 				var loadedControls:Map<String, Array<FlxKey>> = save.data.keyboard;
 				for (control => keys in loadedControls)
-					if(keyBinds.exists(control)) keyBinds.set(control, keys);
+					if (keyBinds.exists(control))
+						keyBinds.set(control, keys);
 			}
-			if(save.data.gamepad != null)
+			if (save.data.gamepad != null)
 			{
 				var loadedControls:Map<String, Array<FlxGamepadInputID>> = save.data.gamepad;
 				for (control => keys in loadedControls)
-					if(gamepadBinds.exists(control)) gamepadBinds.set(control, keys);
+					if (gamepadBinds.exists(control))
+						gamepadBinds.set(control, keys);
 			}
-			if(save.data.mobile != null) {
+			if (save.data.mobile != null)
+			{
 				var loadedControls:Map<String, Array<MobileInputID>> = save.data.mobile;
 				for (control => keys in loadedControls)
-					if(mobileBinds.exists(control)) mobileBinds.set(control, keys);
+					if (mobileBinds.exists(control))
+						mobileBinds.set(control, keys);
 			}
 			reloadVolumeKeys();
 		}
@@ -441,10 +487,36 @@ class ClientPrefs {
 		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
 		var drawFramerate:Int = getInterpolatedDrawFramerate(safeFramerate);
 
-		FlxG.fixedTimestep = true;
-		FlxG.updateFramerate = safeFramerate;
-		FlxG.drawFramerate = drawFramerate;
-		FlxG.maxElapsed = 1 / safeFramerate;
+		if (data.uncapFramerate)
+		{
+			FlxG.fixedTimestep = true;
+			FlxG.updateFramerate = FRAMERATE_MAX;
+			FlxG.drawFramerate = FRAMERATE_UNCAPPED;
+			FlxG.maxElapsed = 1 / FRAMERATE_MAX;
+		}
+		else switch (data.framerateMode)
+		{
+			case 'Psych':
+				FlxG.fixedTimestep = false;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = safeFramerate;
+				FlxG.maxElapsed = 0.1;
+
+			case 'Fixed':
+				FlxG.fixedTimestep = true;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = safeFramerate;
+				FlxG.maxElapsed = 1 / safeFramerate;
+
+			default:
+				drawFramerate = getInterpolatedDrawFramerate(safeFramerate);
+				FlxG.fixedTimestep = true;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = drawFramerate;
+				FlxG.maxElapsed = 1 / safeFramerate;
+		}
+
+		drawFramerate = FlxG.drawFramerate;
 
 		#if (!html5 && !switch)
 		try
@@ -461,6 +533,95 @@ class ClientPrefs {
 			// Ignore targets that do not expose window frame rate at runtime.
 		}
 		#end
+	}
+
+	public static function normalizeFPSCounterPrefs():Void
+	{
+		final modes:Array<String> = [
+			'Hidden',
+			'Visible No Background',
+			'Visible with Background',
+			'Basic Debug',
+			'Extended Debug'
+		];
+		if (data.fpsCounterMode == null || !modes.contains(data.fpsCounterMode))
+			data.fpsCounterMode = #if mobile 'Visible No Background' #else 'Visible with Background' #end;
+
+		data.fpsDebugLevel = switch (data.fpsCounterMode)
+		{
+			case 'Hidden': 0;
+			case 'Visible No Background': 1;
+			case 'Visible with Background': 2;
+			case 'Basic Debug': 3;
+			case 'Extended Debug': 4;
+			default: 2;
+		}
+		data.showFPS = data.fpsCounterMode != 'Hidden';
+	}
+
+	static function fpsModeFromLegacy(level:Int):String
+	{
+		return switch (level)
+		{
+			case 0: 'Visible No Background';
+			case 1: 'Visible with Background';
+			case 2: 'Basic Debug';
+			case 3: 'Extended Debug';
+			default: #if mobile 'Hidden' #else 'Visible with Background' #end;
+		}
+	}
+
+	public static function getTargetWindowFramerate():Int
+	{
+		if (data.uncapFramerate)
+			return FRAMERATE_UNCAPPED;
+
+		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
+		return switch (normalizeFramerateMode(data.framerateMode))
+		{
+			case 'Interpolated':
+				getInterpolatedDrawFramerate(safeFramerate);
+			default:
+				safeFramerate;
+		};
+	}
+
+	static function normalizeFramerateMode(mode:String):String
+	{
+		if (mode == null)
+			return 'Psych';
+
+		for (allowedMode in FRAMERATE_MODES)
+			if (allowedMode == mode)
+				return allowedMode;
+
+		return switch (mode.toLowerCase())
+		{
+			case 'psych': 'Psych';
+			case 'fixed': 'Fixed';
+			case 'interpolated': 'Interpolated';
+			default: 'Psych';
+		};
+	}
+
+	static function syncLegacyFpsReworkFlag():Void
+	{
+		data.fpsRework = normalizeFramerateMode(data.framerateMode) != 'Psych';
+	}
+
+	public static function syncThemeModeFlags():Void
+	{
+		var themeMode:String = data.menuThemeMode;
+		if (themeMode == null || themeMode.length == 0)
+			themeMode = data.menuDarkTheme ? 'Dark' : 'Light';
+
+		data.menuThemeMode = switch (themeMode.toLowerCase())
+		{
+			case 'dark': 'Dark';
+			default: 'Light';
+		};
+		data.menuDarkTheme = data.menuThemeMode == 'Dark';
+		data.menuAccentColorCustom = 0xFF000000 | (data.menuAccentColorCustom & 0x00FFFFFF);
 	}
 
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int
@@ -486,7 +647,8 @@ class ClientPrefs {
 
 	inline public static function getGameplaySetting(name:String, defaultValue:Dynamic = null, ?customDefaultValue:Bool = false):Dynamic
 	{
-		if(!customDefaultValue) defaultValue = defaultData.gameplaySettings.get(name);
+		if (!customDefaultValue)
+			defaultValue = defaultData.gameplaySettings.get(name);
 		return /*PlayState.isStoryMode ? defaultValue : */ (data.gameplaySettings.exists(name) ? data.gameplaySettings.get(name) : defaultValue);
 	}
 
@@ -497,6 +659,7 @@ class ClientPrefs {
 		TitleState.volumeUpKeys = keyBinds.get('volume_up').copy();
 		toggleVolumeKeys(true);
 	}
+
 	public static function toggleVolumeKeys(?turnOn:Bool = true)
 	{
 		final emptyArray = [];
@@ -505,3 +668,4 @@ class ClientPrefs {
 		FlxG.sound.volumeUpKeys = (!Controls.instance.mobileC && turnOn) ? TitleState.volumeUpKeys : emptyArray;
 	}
 }
+
