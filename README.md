@@ -81,7 +81,7 @@ relax — progress doesn’t wait.
 Really i think Deep Engine no be archived but i need because psych engine have limits and deep engine are based in this in this case i change to plus engine because is modern a better for this now be named Deep Engine Reborn i see Nova flare engine are cancelled i think i uses some features to add to my engine 
 
 # Status
-The engine are state dev and it is is broken in libs for this i fixing this thanks for wait yours are really amazing
+The engine are state dev and it is is broken in libs for this i fixing this thanks for wait your are really amazing
 
 # Creddits
 
